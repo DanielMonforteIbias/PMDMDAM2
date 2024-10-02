@@ -1,0 +1,3 @@
+onCreate crea los componentes
+onStart los prepara
+onResume hace que la app esté lista para interactuar con ella

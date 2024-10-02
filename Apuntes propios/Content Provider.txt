@@ -1,0 +1,2 @@
+Content Provider es el mecanismo de Android para la comunicación entre aplicaciones
+Ejemplo -> Una aplicación abre PayPal, una app del banco o algún otro método de pago; comunicarse con una BBDD

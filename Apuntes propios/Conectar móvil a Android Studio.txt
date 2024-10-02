@@ -1,0 +1,2 @@
+Ajustes -> Dar 5 veces a la versión SO -> Buscar Opciones de desarrollador -> Activar Depuración USB
+Android Studio reconocerá el dispositivo al conectarlo

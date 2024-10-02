@@ -1,0 +1,38 @@
+public class MainActivity extends AppCompatActivity implements 
+View.OnClickListener {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {    
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.your_layout);
+
+        Button one = (Button) findViewById(R.id.buttonOne);
+        one.setOnClickListener(this); // calling onClick() method
+        Button two = (Button) findViewById(R.id.buttonTwo);
+        two.setOnClickListener(this); 
+        Button three = (Button) findViewById(R.id.buttonThree);
+        three.setOnClickListener(this); 
+    }
+
+    @Override
+    public void onClick(View v) {
+	switch (v.getId()) {
+            case R.id.buttonOne:
+                // TODO: action to perform when user clicks buttonOne.
+                break;
+
+            case R.id.buttonTwo:
+                // TODO: handle button click action
+                break;
+
+            case R.id.buttonThree:
+                // TODO: handle button click action
+                break;
+
+            default:
+                break;
+        }
+    }
+}
+
+//En versiones recientes esta forma no funciona, en su lugar hay que hacerlo con if-else
