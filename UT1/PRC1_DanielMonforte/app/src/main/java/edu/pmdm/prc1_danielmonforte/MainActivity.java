@@ -1,7 +1,7 @@
 package edu.pmdm.prc1_danielmonforte;
 
+import android.content.res.Configuration;
 import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -31,8 +31,10 @@ public class MainActivity extends AppCompatActivity {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 int numeroSeries=0, segundosTrabajo=0, segundosDescanso=0;
                 boolean valoresValidos=true; //Variable que controlará si se sigue o no, en base a si los valores son o no válidos
+
                 try{ //Intentamos leer el numero de series
                     numeroSeries=Integer.parseInt(series.getText().toString());
                     if(numeroSeries<=0){ //Si el valor no es positivo
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
                         valoresValidos=false;
                     }
                 }
-                catch (Exception e){ //Si es una letra o un valor no válido
+                catch (Exception e){ //Si es un valor no válido
                     showToast("Número de series no válido");
                     valoresValidos=false;
                 }
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                         valoresValidos=false;
                     }
                 }
-                catch(Exception e){ //Si es una letra o un valor no válido
+                catch(Exception e){ //Si es un valor no válido
                     showToast("Segundos de trabajo no válido");
                     valoresValidos=false;
                 }
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                         valoresValidos=false;
                     }
                 }
-                catch(Exception e){ //Si es una letra o un valor no válido
+                catch(Exception e){ //Si es un valor no válido
                     showToast("Segundos de descanso no válido");
                     valoresValidos=false;
                 }
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         TextView txtSeries=findViewById(R.id.txtSeriesLeft);
         ImageButton btnPlay=findViewById(R.id.imgBtnPlay);
 
-        //ACTUALIZAMOS INFORMACION EN PANTALLA, COLORES...
+        //ACTUALIZAMOS INFORMACION EN PANTALLA, COLORES Y DEMÁS
         txtSeries.setText("SERIES LEFT: "+numeroSeries); //Actualizamos el número de series restantes
         txtEstado.setText("WORK"); //Actualizamos el estado a "WORK"
         layout.setBackgroundResource(R.drawable.degradado_verde); //Ponemos el degradado verde como fondo del layout
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void onFinish() {
                 txtEstado.setText("REST");
-                layout.setBackgroundColor(Color.RED);
+                layout.setBackgroundResource(R.drawable.degradado_rojo);
                 new CountDownTimer(segundosDescanso*1000, 1000) { //countDownInterval indica cuánto tiempo se tarda en actualizar la cuenta atrás. 1000ms es 1s
                     public void onTick(long millisUntilFinished) {
                         txtSegundos.setText(millisUntilFinished / 1000+"");
@@ -124,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
                         else{ //Si no es la última serie
                             cicloTrabajo(numeroSeries-1,segundosTrabajo,segundosDescanso); //Llamamos al método con 1 serie menos que antes
                         }
-
                     }
                 }.start();
             }
