@@ -1,0 +1,3 @@
+Configuration.ORIENTATION_PORTRAIT means that the phone is in a vertical position
+
+Configuration.ORIENTATION_LANDSCAPE means that it is in a  horizontal position
