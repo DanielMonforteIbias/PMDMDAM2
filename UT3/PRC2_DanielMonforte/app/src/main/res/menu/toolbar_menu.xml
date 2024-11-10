@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menuItemInstrucciones"
+        android:title="Instrucciones" />
+    <item
+        android:id="@+id/menuItemReiniciar"
+        android:title="Reiniciar el juego" />
+    <item
+        android:id="@+id/menuItemConfigurar"
+        android:title="Configurar el juego" />
+</menu>
