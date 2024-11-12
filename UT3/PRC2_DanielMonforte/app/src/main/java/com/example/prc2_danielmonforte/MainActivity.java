@@ -115,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         minasRestantes=numeroMinas; //Guardamos las minas restantes como el total de minas que hay
         rellenarMinas();//Rellenamos el tablero interno con minas
         comprobarAlrededoresMinas(); //Comprobamos las casillas alrededor de cada mina
+        imprimirMatriz();
         crearGridLayout(); //Creamos el tablero visualmente
     }
 

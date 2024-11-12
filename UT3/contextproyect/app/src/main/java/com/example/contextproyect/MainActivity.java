@@ -8,6 +8,7 @@ import android.media.AudioManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -29,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonReadVolume;
     private ConstraintLayout layout;
     private RadioGroup radioGroupColorBotones;
+    private RadioButton rbBotonesMorados;
+    private RadioButton rbBotonesRojos;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -161,9 +164,16 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Color cambiado a blanco", Toast.LENGTH_SHORT).show();
             }
         });
+        //Inicializar radioButtons
+        rbBotonesMorados=findViewById(R.id.rbBotonesMorados);
+        rbBotonesRojos=findViewById(R.id.rbBotonesRojos);
 
         int savedButtonColor = sharedPreferences.getInt("buttonColor",Color.MAGENTA);
+        //Hacemos que esté marcado el RadioButton correspondiente al color de botones guardado
+        if(savedButtonColor==Color.MAGENTA) rbBotonesMorados.setChecked(true);
+        else if(savedButtonColor==Color.RED) rbBotonesRojos.setChecked(true);
         cambiarColorBotones(savedButtonColor);
+
         //RadioGroup para cambiar color de botones
         radioGroupColorBotones =findViewById(R.id.rdGroupColorBotones);
         radioGroupColorBotones.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {

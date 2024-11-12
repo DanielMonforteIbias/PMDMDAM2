@@ -53,7 +53,7 @@ public class Configuracion extends AppCompatActivity {
                     showToast("La URL no puede estar vacía");
                     intentValido=false;
                 }
-                if(!url.startsWith("https://")){ //Si no empieza por https://, lo ponemos nosotros
+                if(!url.startsWith("https://") && !url.startsWith("http://")){ //Si no empieza por https:// o http://, lo ponemos nosotros
                     url="https://"+url;
                 }
                 if(intentValido){
