@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private String nombre="";
     private int edad=0;
     private String ciudad="";
-    private String preferencia="Playa";
+    private String preferencia="Playa"; //Por defecto tiene el valor del que hay seleccionado al principio
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,18 +42,21 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        //Inicializamos vistas
         nombreEditText =findViewById(R.id.editTextNombre);
         edadEditText =findViewById(R.id.editTextEdad);
         ciudadEditText =findViewById(R.id.editTextCiudad);
+        boton=findViewById(R.id.btnContinuar);
         preferenciaRadioGroup=findViewById(R.id.rgPreferencia);
+        //Listener del radiogroup
         preferenciaRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if(checkedId==R.id.rbPlaya) preferencia="Playa";
-                else if (checkedId==R.id.rbMontaña) preferencia="Montaña";
+                if(checkedId==R.id.rbPlaya) preferencia="Playa"; //Si está seleccionado el rb de playa, la preferencia vale "Playa"
+                else if (checkedId==R.id.rbMontaña) preferencia="Montaña"; //Si está seleccionado el rb de montaña, la preferencia vale "Montaña"
             }
         });
-        boton=findViewById(R.id.btnContinuar);
+        //Listener del botón Continuar
         boton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -62,23 +65,32 @@ public class MainActivity extends AppCompatActivity {
                 ciudad=ciudadEditText.getText().toString();
                 //preferencia se modifica en el listener de su radioGroup
                try{
-                    edad=Integer.parseInt(edadEditText.getText().toString());
+                    edad=Integer.parseInt(edadEditText.getText().toString()); //Si la edad se puede pasar a int, se pasa
                }
                 catch(Exception e){
-                    Toast.makeText(getApplicationContext(),"La edad no es válida",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"La edad no es válida",Toast.LENGTH_LONG).show(); //Si no se puede pasar a int, se saca un mensaje
                     intentValido=false;
                 }
-                if(nombre.equals("") || ciudad.equals("")){
-                    Toast.makeText(getApplicationContext(),"Todos los campos deben estar rellenos",Toast.LENGTH_LONG).show();
+                if(nombre.equals("") || ciudad.equals("")){ //Si algun campo está vacío
+                    Toast.makeText(getApplicationContext(),"Todos los campos deben estar rellenos",Toast.LENGTH_LONG).show(); //Se saca un mensaje
                     intentValido=false;
                 }
-                if(intentValido) {
+                if(contieneNumeros(nombre)){ //Si el nombre contiene algun digito
+                    Toast.makeText(getApplicationContext(),"El nombre no puede contener números",Toast.LENGTH_SHORT).show(); //Se saca un mensaje
+                    intentValido=false;
+                }
+                if(contieneNumeros(ciudad)){ //Si la ciudad contiene algun digito
+                    Toast.makeText(getApplicationContext(),"La ciudad no puede contener números",Toast.LENGTH_SHORT).show(); //Se saca un mensaje
+                    intentValido=false;
+                }
+                if(intentValido) { //Si no ha habido ningun error
                     Intent intent = new Intent(getApplicationContext(), SummaryActivity.class);
+                    //Ponemos la informacion en el intent para pasarla a la otra pantalla
                     intent.putExtra("Nombre",nombre);
                     intent.putExtra("Edad",edad);
                     intent.putExtra("Ciudad",ciudad);
                     intent.putExtra("Preferencia",preferencia);
-                    summaryActivityLauncher.launch(intent);
+                    summaryActivityLauncher.launch(intent); //Lanzamos la actividad de resumen
                 }
             }
         });
@@ -98,5 +110,8 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    public boolean contieneNumeros(String s){
+        return s.matches(".*\\d+.*"); //Devuelve true si hay algun digito en el string, false si no
+    }
 
 }

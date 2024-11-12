@@ -32,7 +32,7 @@ public class EditActivity extends AppCompatActivity {
     private int edad=0;
     private String ciudad="";
     private String preferencia="Playa";
-    private int selectedPreference=0;
+    private int selectedPreference=0; //Variable para que aparezca por defecto seleccionado el rb de la preferencia
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +43,7 @@ public class EditActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        //Inicializar variables con los datos recibidos
+        //Inicializar variables con los datos recibidos del intent
         Intent intent=getIntent();
         nombre=intent.getStringExtra("Nombre");
         edad=intent.getIntExtra("Edad",0);
@@ -55,15 +55,16 @@ public class EditActivity extends AppCompatActivity {
         nombreEditText=findViewById(R.id.editTextNombre);
         edadEditText=findViewById(R.id.editTextEdad);
         ciudadEditText=findViewById(R.id.editTextCiudad);
+        boton=findViewById(R.id.btnGuardarCambios);
         preferenciaRadioGroup=findViewById(R.id.rgPreferencia);
 
         //Asignar a las vistas los valores recibidos
         nombreEditText.setText(nombre);
         edadEditText.setText(edad+"");
         ciudadEditText.setText(ciudad);
-        preferenciaRadioGroup.check(selectedPreference);
+        preferenciaRadioGroup.check(selectedPreference); //Seleccionamos el que corresponda a la preferencia que hemos recibido
 
-        //Listeners
+        //Listener del radiogroup
         preferenciaRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -71,7 +72,7 @@ public class EditActivity extends AppCompatActivity {
                 else if (checkedId==R.id.rbMontaña) preferencia="Montaña";
             }
         });
-        boton=findViewById(R.id.btnGuardarCambios);
+        //Listener del botón para guardar cambios
         boton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,14 +81,22 @@ public class EditActivity extends AppCompatActivity {
                 ciudad=ciudadEditText.getText().toString();
                 //preferencia se modifica en el listener de su radioGroup
                 try{
-                    edad=Integer.parseInt(edadEditText.getText().toString());
+                    edad=Integer.parseInt(edadEditText.getText().toString()); //Intentamos pasar la edad a int
                 }
-                catch(Exception e){
-                    Toast.makeText(getApplicationContext(),"La edad no es válida",Toast.LENGTH_LONG).show();
+                catch(Exception e){//Si no se puede capturamos la excepcion
+                    Toast.makeText(getApplicationContext(),"La edad no es válida",Toast.LENGTH_LONG).show(); //Mostramos un mensaje con el error
                     intentValido=false;
                 }
                 if(nombre.equals("") || ciudad.equals("")){
                     Toast.makeText(getApplicationContext(),"Todos los campos deben estar rellenos",Toast.LENGTH_LONG).show();
+                    intentValido=false;
+                }
+                if(contieneNumeros(nombre)){ //Si el nombre contiene algun digito
+                    Toast.makeText(getApplicationContext(),"El nombre no puede contener números",Toast.LENGTH_SHORT).show(); //Se saca un mensaje
+                    intentValido=false;
+                }
+                if(contieneNumeros(ciudad)){ //Si la ciudad contiene algun digito
+                    Toast.makeText(getApplicationContext(),"La ciudad no puede contener números",Toast.LENGTH_SHORT).show(); //Se saca un mensaje
                     intentValido=false;
                 }
                 if(intentValido) {
@@ -101,5 +110,8 @@ public class EditActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+    public boolean contieneNumeros(String s){
+        return s.matches(".*\\d+.*"); //Devuelve true si hay algun digito en el string, false si no
     }
 }

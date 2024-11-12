@@ -49,23 +49,26 @@ public class SummaryActivity extends AppCompatActivity {
         preferenciaTextView=findViewById(R.id.txtPreferencia);
         regresar=findViewById(R.id.btnRegresar);
         editar=findViewById(R.id.btnEditar);
+        //OnClick del botón registrar
         regresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(),"Datos guardados correctamente",Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"Datos guardados correctamente",Toast.LENGTH_LONG).show(); //Mensaje simulando que se han guardado datos
                 setResult(RESULT_OK);
-                finish();
+                finish(); //Terminamos la actividad, volviendo a la primera pantalla
             }
         });
+        //OnClick del botón editar
         editar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), EditActivity.class);
+                //Ponemos la información en el intent
                 intent.putExtra("Nombre",nombre);
                 intent.putExtra("Edad",edad);
                 intent.putExtra("Ciudad",ciudad);
                 intent.putExtra("Preferencia",preferencia);
-                editActivityLauncher.launch(intent);
+                editActivityLauncher.launch(intent); //Lanzamos la actividad de edicion
             }
         });
         //Recuperamos los datos del intent que invocó la actividad
@@ -84,11 +87,12 @@ public class SummaryActivity extends AppCompatActivity {
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             Intent data = result.getData();
+                            //Obtenemos los datos del intent
                             nombre=data.getStringExtra("Nombre");
                             edad=data.getIntExtra("Edad",0);
                             ciudad=data.getStringExtra("Ciudad");
                             preferencia=data.getStringExtra("Preferencia");
-                            actualizarDatos();
+                            actualizarDatos(); //Actualizamos los datos de esta pantalla
                         }
                     }
                 });
