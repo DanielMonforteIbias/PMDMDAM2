@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/menuItemInstrucciones"
@@ -10,4 +11,9 @@
     <item
         android:id="@+id/menuItemConfigurar"
         android:title="Configurar el juego" />
+    <item
+        android:id="@+id/menuItemIconoMina"
+        android:title="Elegir icono"
+        android:icon="@drawable/bomba"
+        app:showAsAction="always" /> <!--Para que aparezca aparte del icono de los 3 puntos con el resto de opciones-->
 </menu>
