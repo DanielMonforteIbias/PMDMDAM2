@@ -2,9 +2,9 @@ package com.example.prc2_danielmonforte;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private int columnas=0; //Numero de columnas de nuestra matriz
     private int numeroMinas=0; //Numero de minas a introducir en la matriz
     private int matriz[][]=new int[0][0]; //Matriz que contendra las casillas
-
+    private String estadoCasillas[][]=new String[0][0]; //Matriz que contendrá el estado de las casillas
     private int minasRestantes=0; //Minas que faltan por marcar
 
     private int width=0; //Anchura de la pantalla
@@ -83,9 +83,46 @@ public class MainActivity extends AppCompatActivity {
         bordeFondoBlanco =getDrawable(R.drawable.bordefondoblanco); //Inicializamos el Drawable borde con fondo blanco con el recurso deseado
         bordeFondoRojo=getDrawable(R.drawable.bordefondorojo); //Inicializamos el Drawable borde con fondo rojo con el recurso deseado
         crearListeners(); //Inicializamos los listeners de onClick y OnLongClick
-        iniciarJuego(); //Iniciamos el juego
+        if(savedInstanceState!=null){ //Si existe una instancia de guardado, recuperamos los datos
+            matriz=(int[][])savedInstanceState.getSerializable("Matriz"); //Recuperamos la matriz interna
+            filas=savedInstanceState.getInt("Filas"); //Recuperamos el número de filas
+            columnas=savedInstanceState.getInt("Columnas");//Recuperamos el número de columnas
+            numeroMinas=savedInstanceState.getInt("NumeroMinas"); //Recuperamos el número de minas total
+            minasRestantes=savedInstanceState.getInt("MinasRestantes"); //Recuperamos el número de minas restantes
+            dificultad=savedInstanceState.getInt("Dificultad"); //Recuperamos el valor de la dificultad
+            estadoCasillas=(String[][])savedInstanceState.getSerializable("EstadoCasillas"); //Recuperamos la matriz con el estado de las casillas
+            iconoMina=savedInstanceState.getInt("IconoMina");
+            crearGridLayout(); //Creamos de nuevo el gridLayout. Necesario para que tenga las medidas correctas
+        }
+        else{ //Si no existe
+            iniciarJuego(); //Iniciamos el juego
+        }
     }
 
+    /**
+     * Método que guarda el estado de la aplicación antes de destruirse para restaurar su estado al rehacerla (por ejemplo, al rotar la pantalla)
+     * @param outState variable que guardará el estado de nuestra aplicación
+     *
+     */
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("Matriz", matriz); //Guardamos la matriz interna
+        outState.putInt("Filas", filas); //Guardamos el número de filas
+        outState.putInt("Columnas", columnas); //Guardamos el número de columnas
+        outState.putInt("NumeroMinas", numeroMinas); //Guardamos el número de minas total
+        outState.putInt("MinasRestantes", minasRestantes); //Guardamos el número de minas restante
+        outState.putInt("Dificultad", dificultad); //Guardamos el valor de la dificultad
+        outState.putSerializable("EstadoCasillas",estadoCasillas); //Guardamos la matriz con el estado de las casillas
+        outState.putInt("IconoMina", iconoMina); //Guardamos el valor de la dificultad
+    }
+
+    /**
+     * Método que crea las opciones de menú de la Toolbar
+     * @param menu El menú en el que se colocarán las opciones
+     *
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) { //Inicializa el contenido del menú
         getMenuInflater().inflate(R.menu.toolbar_menu,menu); //Inflamos las opciones del archivo toolbar_menu en el menú para que aparezcan al pulsarlo
@@ -94,6 +131,12 @@ public class MainActivity extends AppCompatActivity {
         return true; //Devolvemos true para que el menú se muestre. Si devolviésemos false no lo haría
     }
 
+    /**
+     * Método que se ejecuta al seleccionar una opción del menú
+     * @param item El ítem del menú que se eligió
+     *
+     * @return true para consumir la llamada
+     */
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id=item.getItemId(); //Obtenemos el id del item pulsado
@@ -121,6 +164,8 @@ public class MainActivity extends AppCompatActivity {
         columnas=valoresColumnas[dificultad]; //Según la dificultad cogemos un valor de columnas
         numeroMinas=valoresMinas[dificultad]; //Según la dificultad cogemos un valor de minas
         matriz=new int[filas][columnas]; //Inicializamos la matriz interna con el número de filas y columnas correspondientes
+        estadoCasillas=new String[filas][columnas]; //Inicializamos la matriz de estado de las casillas con el número de filas y columnas correspondientes
+        inicializarEstadoCasillas(); //Inicializamos las posiciones de la matriz de estado a cadenas vacías
         minasRestantes=numeroMinas; //Guardamos las minas restantes como el total de minas que hay
         rellenarMinas();//Rellenamos el tablero interno con minas
         comprobarAlrededoresMinas(); //Comprobamos las casillas alrededor de cada mina
@@ -128,6 +173,16 @@ public class MainActivity extends AppCompatActivity {
         crearGridLayout(); //Creamos el tablero visualmente
     }
 
+    /**
+     * Método que inicializa el valor de las posiciones de la matriz estadoCasillas a cadenas vacías, pues por defecto se inicializan en null y eso daría errores posteriores al intentar comparar cadenas
+     */
+    public void inicializarEstadoCasillas(){
+        for(int i=0;i<filas;i++){ //Recorremos la matriz
+            for(int j=0;j<columnas;j++){
+                estadoCasillas[i][j]=""; //Cada posición la llenamos con una cadena vacía
+            }
+        }
+    }
     /**
      * Método que rellena la matriz interna con las minas, poniendo un -1 en las casillas donde hay una mina
      */
@@ -215,18 +270,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 else if (v instanceof ImageButton){ //Si la vista que ha activado el método es un ImageButton
-                    if(v.getTag().equals(("Marcada"))){ //Si la mina estaba marcada
-                        ((ImageButton)v).setTag("No marcada"); //Ponemos su tag a "No marcada"
-                        ((ImageButton)v).setImageDrawable(null); //Quitamos la imagen de mina que indica que está marcada
-                        minasRestantes++; //Como se ha desmarcado una mina que estaba marcada correctamente, ahora queda una mina más por marcar
-                        //Se permite desmarcar minas que estaban marcadas correctamente porque, según los requisitos, el onLongClick "Marca o desmarca la casilla como sospechosa de contener una mina"
-                    }
-                    else if (v.getTag().equals("No marcada")){ //Si la mina no estaba marcada
-                        ((ImageButton)v).setTag("Marcada"); //Ponemos su tag como "Marcada"
-                        ((ImageButton)v).setImageResource(iconoMina); //Ponemos la imagen de la mina para saber que se ha marcado
-                        minasRestantes--; //Como se ha marcado bien, ahora queda una mina menos por marcar
-                        comprobarVictoria(); //Comprobamos si se han marcado todas las minas
-                    }
+                    marcarODesmarcarMina((ImageButton) v); //La marcamos o desmarcamos según toque
                 }
                 return true; //Devolvemos true para que no se llame a OnClick al soltar, pues si se devuelve true se consume la llamada
             }
@@ -234,19 +278,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Método que descubre una casilla y, si es 0, encuentra la casilla en el gridLayout y descubre las de alrededor
+     * Método que descubre una casilla y la guarda como "Descubierta" en la matriz de estado de casillas.
+     * Además, si la casilla descubierta es 0, encuentra la casilla en el gridLayout y descubre las de alrededor
      * @param v El botón de la casilla que se ha pulsado
      */
     public void descubrirCasilla(Button v){
         if(!v.getTag().equals(("Descubierta"))){ //Si la casilla no ha sido descubierta (comprobación necesaria por si se intenta descubrir al pulsar en otra casilla con 0 alrededor pero esta ya está descubierta)
             v.setText((int)v.getTag()+""); //Mostramos su tag como texto del botón, que es el número de minas que hay alrededor
             v.setTag("Descubierta"); //Ahora su tag almacena que ya ha sido descubierta
-            if(v.getText().equals("0")){ //Si la casilla no tiene minas alrededor
-                v.setBackground(bordeFondoRojo); //Ponemos la casilla con el fondo rojizo para distinguirla del resto
-                for (int i=0;i< matriz.length;i++){ //Recorremos la matriz para encontrar la casilla específica
-                    for (int j=0;j< matriz[0].length;j++){
-                        int index=i*columnas+j; //Calculamos el índice que tendrá en el gridLayout, que es un número que se incrementa
-                        if(gridLayout.getChildAt(index)==v) { //Si el elemento en ese index del gridLayout es nuestro botón
+            for (int i=0;i< matriz.length;i++){ //Recorremos la matriz para encontrar la casilla específica
+                for (int j=0;j< matriz[0].length;j++){
+                    int index=i*columnas+j; //Calculamos el índice que tendrá en el gridLayout, que es un número que se incrementa
+                    if(gridLayout.getChildAt(index)==v) { //Si el elemento en ese index del gridLayout es la casilla que hemos descubierto
+                        estadoCasillas[i][j]="Descubierta"; //Guardamos que está descubierta en la matriz de estado de casillas
+                        if(v.getText().equals("0")) { //Si la casilla no tiene minas alrededor
+                            v.setBackground(bordeFondoRojo); //Ponemos la casilla con el fondo rojizo para distinguirla del resto
                             descubrirCasillasAlrededor(i,j); //Descubrimos las casillas alrededor suya
                         }
                     }
@@ -269,6 +315,34 @@ public class MainActivity extends AppCompatActivity {
                     if(fila>=0 && fila<filas && columna>=0 && columna<columnas) { //Si la casilla en la que estamos existe, es decir, no está fuera de la matriz
                         int index=fila*columnas+columna; //Calculamos el index de la casilla en el gridLayout
                         descubrirCasilla((Button)gridLayout.getChildAt(index)); //Descubrimos la casilla que tenga el index calculado
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Método que marca o desmarca una mina, según si antes estaba marcada o no, y guarda su nuevo estado en la matriz de estados de casillas
+     * @param v El ImageButton de la mina con la que se ha interactuado
+     */
+    public void marcarODesmarcarMina(ImageButton v){
+        for (int i=0;i< matriz.length;i++){ //Recorremos la matriz para encontrar la mina específica
+            for (int j=0;j< matriz[0].length;j++){
+                int index=i*columnas+j; //Calculamos el índice que tendrá en el gridLayout, que es un número que se incrementa
+                if(gridLayout.getChildAt(index)==v) { //Si el elemento en ese index del gridLayout es la mina que hemos tocado
+                    if(v.getTag().equals(("Marcada"))){ //Si la mina estaba marcada
+                        v.setTag("No marcada"); //Ponemos su tag a "No marcada"
+                        v.setImageDrawable(null); //Quitamos la imagen de mina que indica que está marcada
+                        estadoCasillas[i][j]="No marcada"; //La guardamos como No marcada en la matriz de estado de casillas
+                        minasRestantes++; //Como se ha desmarcado una mina que estaba marcada correctamente, ahora queda una mina más por marcar
+                        //Se permite desmarcar minas que estaban marcadas correctamente porque, según los requisitos, el onLongClick "Marca o desmarca la casilla como sospechosa de contener una mina"
+                    }
+                    else if (v.getTag().equals("No marcada")){ //Si la mina no estaba marcada
+                        v.setTag("Marcada"); //Ponemos su tag como "Marcada"
+                        v.setImageResource(iconoMina); //Ponemos la imagen de la mina para saber que se ha marcado
+                        estadoCasillas[i][j]="Marcada"; //La guardamos como Marcada en la matriz de estado de casillas
+                        minasRestantes--; //Como se ha marcado bien, ahora queda una mina menos por marcar
+                        comprobarVictoria(); //Comprobamos si se han marcado todas las minas
                     }
                 }
             }
@@ -312,7 +386,14 @@ public class MainActivity extends AppCompatActivity {
                     mina=new ImageButton(this); //Meteremos un ImageButton
                     mina.setLayoutParams(linearLayoutParams); //Le asignamos los parámetros de los botones para que tenga medidas correctas
                     mina.setBackground(bordeFondoBlanco); //Añadimos el borde y el fondo blanco
-                    mina.setTag("No marcada"); //En un principio, guardamos en el tag que no está marcada
+                    if(estadoCasillas[i][j].equals("Marcada")){ //Si la mina está marcada en la matriz de estado (necesario por si se ha recuperado el estado de la app al rotar la pantalla)
+                        mina.setImageResource(iconoMina); //Ponemos el icono de la mina para mostrar que está marcada
+                        mina.setTag("Marcada"); //En un principio, guardamos en el tag que está marcada
+                    }
+                    else{ //Si no está marcada
+                        mina.setTag("No marcada"); //En un principio, guardamos en el tag que no está marcada
+                    }
+
                     mina.setOnClickListener(onClickListener); //Le asignamos el onClickListener
                     mina.setOnLongClickListener(onLongClickListener); //Le asignamos el onLongClickListener
                     gridLayout.addView(mina); //Añadimos la vista al gridLayout
@@ -321,7 +402,13 @@ public class MainActivity extends AppCompatActivity {
                     casilla=new Button(this); //Crearemos un botón
                     casilla.setLayoutParams(linearLayoutParams); //Le asignamos los parámetros de los botones para que tenga medidas correctas
                     casilla.setBackground(bordeFondoBlanco); //Añadimos el borde y el fondo blanco
+                    casilla.setPadding(0,0,0,0); //Quitamos el padding del botón. Necesario porque cuando hay muchos botones muy pequeños el padding hace que el texto no se vea
                     casilla.setTag(matriz[i][j]); //Guardamos en su tag el número de minas que hay alrededor, que está guardado en la matriz interna
+                    if(estadoCasillas[i][j].equals("Descubierta")){ //Si la casilla está descubierta en la matriz de estado (necesario por si se ha recuperado el estado de la app al rotar la pantalla)
+                        casilla.setText(matriz[i][j]+""); //Ponemos su valor como texto para mostrar el número de minas alrededor (concatenado con uan cadena vacía para que sea String y no int)
+                        if(casilla.getText().equals("0")) casilla.setBackground(bordeFondoRojo); //Además, si no tiene minas alrededor el fondo será rojo claro
+                        casilla.setTag("Descubierta"); //Marcamos que está descubierta en su tag
+                    }
                     casilla.setOnClickListener(onClickListener); //Le asignamos el onClickListener
                     casilla.setOnLongClickListener(onLongClickListener); //Le asignamos el onLongClickListener
                     gridLayout.addView(casilla); //Añadimos la vista al gridLayout
