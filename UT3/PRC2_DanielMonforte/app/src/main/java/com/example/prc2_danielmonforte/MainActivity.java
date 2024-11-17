@@ -2,7 +2,9 @@ package com.example.prc2_danielmonforte;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -26,7 +28,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
-
+    //VARIABLES DEL TABLERO
     private int filas=0; //Numero de filas de nuestra matriz
     private int columnas=0; //Numero de columnas de nuestra matriz
     private int numeroMinas=0; //Numero de minas a introducir en la matriz
@@ -34,14 +36,12 @@ public class MainActivity extends AppCompatActivity {
     private String estadoCasillas[][]=new String[0][0]; //Matriz que contendrá el estado de las casillas
     private int minasRestantes=0; //Minas que faltan por marcar
 
+    //TAMAÑO DEL TABLERO
     private int width=0; //Anchura de la pantalla
     private int height=0; //Altura de la pantalla
 
     //DIFICULTAD
-    public final int PRINCIPIANTE=0;
-    public final int AMATEUR=1;
-    public final int AVANZADO=2;
-    private int dificultad=0; //Guardará la dificultad actual
+    private int dificultad=0; //Guardará la dificultad actual. 0 es principiante, 1 es amateur y 2 es avanzado
     private int valoresFilas[]={8,12,16}; //Array que contiene las cantidades de filas que puede haber según la dificultad
     private int valoresColumnas[]={8,12,16}; //Array que contiene las cantidades de columnas que puede haber según la dificultad
     private int valoresMinas[]={10,30,60}; //Array que contiene las cantidades de minas que puede haber según la dificultad
@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     //VARIABLE PARA MOSTRAR DIALOGOS EN PANTALLA
     private AlertDialog.Builder dialogo;
+    private boolean dialogoAbierto=false; //Variable para controlar si hay algun dialogo abierto, para que no se abran varios al pulsar muy rápido
     //VISTAS DE BUTTON E IMAGEBUTTON PARA AÑADIR AL TABLERO
     private Button casilla;
     private ImageButton mina;
@@ -67,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
     //VARIABLES PARA GUARDAR LOS ID DE LOS ICONOS DE MINA SELECCIONADOS
     private int iconoMina=R.drawable.bomba; //Inicializada con la bomba por defecto
     private int iconoMinaMuerta=R.drawable.bombamuerta; //Inicializada con la bomba por defecto
+    //MEDIAPLAYER PARA REPRODUCIR SONIDOS
+    private MediaPlayer mp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,38 +86,21 @@ public class MainActivity extends AppCompatActivity {
         bordeFondoBlanco =getDrawable(R.drawable.bordefondoblanco); //Inicializamos el Drawable borde con fondo blanco con el recurso deseado
         bordeFondoRojo=getDrawable(R.drawable.bordefondorojo); //Inicializamos el Drawable borde con fondo rojo con el recurso deseado
         crearListeners(); //Inicializamos los listeners de onClick y OnLongClick
-        if(savedInstanceState!=null){ //Si existe una instancia de guardado, recuperamos los datos
-            matriz=(int[][])savedInstanceState.getSerializable("Matriz"); //Recuperamos la matriz interna
-            filas=savedInstanceState.getInt("Filas"); //Recuperamos el número de filas
-            columnas=savedInstanceState.getInt("Columnas");//Recuperamos el número de columnas
-            numeroMinas=savedInstanceState.getInt("NumeroMinas"); //Recuperamos el número de minas total
-            minasRestantes=savedInstanceState.getInt("MinasRestantes"); //Recuperamos el número de minas restantes
-            dificultad=savedInstanceState.getInt("Dificultad"); //Recuperamos el valor de la dificultad
-            estadoCasillas=(String[][])savedInstanceState.getSerializable("EstadoCasillas"); //Recuperamos la matriz con el estado de las casillas
-            iconoMina=savedInstanceState.getInt("IconoMina");
-            crearGridLayout(); //Creamos de nuevo el gridLayout. Necesario para que tenga las medidas correctas
-        }
-        else{ //Si no existe
-            iniciarJuego(); //Iniciamos el juego
-        }
+        iniciarJuego(); //Iniciamos el juego
     }
 
     /**
-     * Método que guarda el estado de la aplicación antes de destruirse para restaurar su estado al rehacerla (por ejemplo, al rotar la pantalla)
-     * @param outState variable que guardará el estado de nuestra aplicación
-     *
+     * Método que se ejecuta al cambiar la configuración, por ejemplo, rotar la pantalla
+     * @param newConfig The new device configuration.
      */
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable("Matriz", matriz); //Guardamos la matriz interna
-        outState.putInt("Filas", filas); //Guardamos el número de filas
-        outState.putInt("Columnas", columnas); //Guardamos el número de columnas
-        outState.putInt("NumeroMinas", numeroMinas); //Guardamos el número de minas total
-        outState.putInt("MinasRestantes", minasRestantes); //Guardamos el número de minas restante
-        outState.putInt("Dificultad", dificultad); //Guardamos el valor de la dificultad
-        outState.putSerializable("EstadoCasillas",estadoCasillas); //Guardamos la matriz con el estado de las casillas
-        outState.putInt("IconoMina", iconoMina); //Guardamos el valor de la dificultad
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        crearGridLayout(); //Volvemos a crear el GridLayout para que tome las nuevas medidas. Es importante incluir medidas en este método para que las casillas se mantengan como antes según lo que hay en las variables internas
+        //Para que esto funcione es importante tener en el manifest la línea "android:configChanges="orientation|screenSize"
+        //Al principio se usaba onSavedStateInstance y se recuperaban datos, pero había un error que no se podía arreglar
+        //Al rotar la pantalla con un diálogo abierto ocurría una excepción, pues el diálogo no se puede mantener en pantalla
+        //De esta forma no se recrea la actividad de nuevo y los diálogos se mantienen en pantalla
     }
 
     /**
@@ -141,16 +127,16 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id=item.getItemId(); //Obtenemos el id del item pulsado
         if(id==R.id.menuItemInstrucciones){ //Si el item pulsado es el de instrucciones
-            mostrarInstrucciones(); //Mostramos las opciones
+            if(!dialogoAbierto)mostrarInstrucciones(); //Mostramos las opciones si no hay ningún diálogo abierto
         }
         else if (id==R.id.menuItemReiniciar){ //Si el item pulsado es el de reiniciar
             reiniciarJuego(); //Reiniciamos el juego
         }
         else if (id==R.id.menuItemConfigurar){ //Si el item pulsado es el de configurar
-            mostrarOpcionesConfiguracion(); //Mostramos las opciones de configuración
+            if(!dialogoAbierto)mostrarOpcionesConfiguracion(); //Mostramos las opciones de configuración si no hay ningún diálogo abierto
         }
         else if (id==R.id.menuItemIconoMina){ //Si el item pulsado es el de cambiar icono de mina
-            cambiarIconoMinas(); //Mostramos el diálogo para cambiar el icono de la mina
+            if(!dialogoAbierto)cambiarIconoMinas(); //Mostramos el diálogo para cambiar el icono de la mina si no hay ningún diálogo abierto
         }
         return true; //Devolvemos true para consumir la llamada. Si devolviésemos false se podrían comprobar otras funciones de click
     }
@@ -169,12 +155,12 @@ public class MainActivity extends AppCompatActivity {
         minasRestantes=numeroMinas; //Guardamos las minas restantes como el total de minas que hay
         rellenarMinas();//Rellenamos el tablero interno con minas
         comprobarAlrededoresMinas(); //Comprobamos las casillas alrededor de cada mina
-        imprimirMatriz();
         crearGridLayout(); //Creamos el tablero visualmente
     }
 
     /**
-     * Método que inicializa el valor de las posiciones de la matriz estadoCasillas a cadenas vacías, pues por defecto se inicializan en null y eso daría errores posteriores al intentar comparar cadenas
+     * Método que inicializa el valor de las posiciones de la matriz estadoCasillas a cadenas vacías, pues por defecto se inicializan en null
+     * y eso daría errores posteriores al intentar comparar cadenas
      */
     public void inicializarEstadoCasillas(){
         for(int i=0;i<filas;i++){ //Recorremos la matriz
@@ -252,7 +238,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else if (v instanceof ImageButton){ //Si la vista que ha activado el método es una ImageButton (es decir, una mina)
                     ((ImageButton)v).setImageResource(iconoMinaMuerta); //Ponemos como imagen el recurso "bombamuerta"
-                    mostrarDialogoFinPartida("Has perdido. Has descubierto una mina",false); //Mostramos un diálogo con mensaje de derrota y motivo
+                    guardarMinaDetonada((ImageButton)v); //Guardamos la mina como detonada para conservarla al rotar pantalla
+                    if(!dialogoAbierto) mostrarDialogoFinPartida("Has perdido. Has descubierto una mina",false); //Mostramos un diálogo con mensaje de derrota y motivo, si no hay ningún diálogo abierto (para no poder abrir varios al pulsar rápido)
                 }
             }
         };
@@ -266,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else{ //Si no ha sido descubierta
                         ((Button)v).setText((int)v.getTag()+""); //Mostramos su tag, que es el número de minas alrededor
+                        guardarMinaMarcadaIncorrectamente((Button)v); //La guardamos como descubierta para conservarla al rotar pantalla
                         mostrarDialogoFinPartida("Has perdido. Has marcado una casilla sin mina",false); //Mostramos un diálogo con mensaje de derrota y el motivo
                     }
                 }
@@ -349,6 +337,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método que guarda una casilla como descubierta cuando se marca incorrectamente, para guardar su estado y que al rotar la pantalla permanezca visible
+     * @param v El botón de la casilla marcada
+     */
+    public void guardarMinaMarcadaIncorrectamente(Button v){
+        for (int i=0;i< matriz.length;i++){ //Recorremos la matriz para encontrar la casilla específica
+            for (int j=0;j< matriz[0].length;j++){
+                int index=i*columnas+j; //Calculamos el índice que tendrá en el gridLayout, que es un número que se incrementa
+                if(gridLayout.getChildAt(index)==v) { //Si el elemento en ese index del gridLayout es la casilla que hemos descubierto
+                    estadoCasillas[i][j]="Descubierta"; //Guardamos que está descubierta en la matriz de estado de casillas
+                }
+            }
+        }
+    }
+
+    /**
+     * Método que guarda una mina como detonada cuando se pulsa, para guardar su estado y conservarla al rotar
+     * @param v La vista de la mina detonada
+     */
+    public void guardarMinaDetonada(ImageButton v){
+        for (int i=0;i< matriz.length;i++){ //Recorremos la matriz para encontrar la casilla específica
+            for (int j=0;j< matriz[0].length;j++){
+                int index=i*columnas+j; //Calculamos el índice que tendrá en el gridLayout, que es un número que se incrementa
+                if(gridLayout.getChildAt(index)==v) { //Si el elemento en ese index del gridLayout es la casilla que hemos descubierto
+                    estadoCasillas[i][j]="Detonada"; //Guardamos que está detonada en la matriz de estado de casillas
+                }
+            }
+        }
+    }
+
     public void crearGridLayout(){
         gridLayout=new GridLayout(getApplicationContext()); //Inicializamos el layout que contendra las minas
         constraintLayout=findViewById(R.id.constraintLayout); //Inicializamos el layout que contendra el tablero
@@ -386,9 +404,12 @@ public class MainActivity extends AppCompatActivity {
                     mina=new ImageButton(this); //Meteremos un ImageButton
                     mina.setLayoutParams(linearLayoutParams); //Le asignamos los parámetros de los botones para que tenga medidas correctas
                     mina.setBackground(bordeFondoBlanco); //Añadimos el borde y el fondo blanco
-                    if(estadoCasillas[i][j].equals("Marcada")){ //Si la mina está marcada en la matriz de estado (necesario por si se ha recuperado el estado de la app al rotar la pantalla)
+                    if(estadoCasillas[i][j].equals("Marcada")){ //Si la mina está marcada en la matriz de estado (necesario por si se ha creado el gridlayout de nuevo al rotar la pantalla)
                         mina.setImageResource(iconoMina); //Ponemos el icono de la mina para mostrar que está marcada
                         mina.setTag("Marcada"); //En un principio, guardamos en el tag que está marcada
+                    }
+                    else if(estadoCasillas[i][j].equals("Detonada")){ //Si su estado es detonada (por si se está creando el tablero tras rotar la pantalla con el diálogo de derrota abierto)
+                        mina.setImageResource(iconoMinaMuerta); //Ponemos el icono de la mina muerta
                     }
                     else{ //Si no está marcada
                         mina.setTag("No marcada"); //En un principio, guardamos en el tag que no está marcada
@@ -404,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
                     casilla.setBackground(bordeFondoBlanco); //Añadimos el borde y el fondo blanco
                     casilla.setPadding(0,0,0,0); //Quitamos el padding del botón. Necesario porque cuando hay muchos botones muy pequeños el padding hace que el texto no se vea
                     casilla.setTag(matriz[i][j]); //Guardamos en su tag el número de minas que hay alrededor, que está guardado en la matriz interna
-                    if(estadoCasillas[i][j].equals("Descubierta")){ //Si la casilla está descubierta en la matriz de estado (necesario por si se ha recuperado el estado de la app al rotar la pantalla)
+                    if(estadoCasillas[i][j].equals("Descubierta")){ //Si la casilla está descubierta en la matriz de estado (necesario por si se ha creaod de nuevo el gridlayout al rotar la pantalla)
                         casilla.setText(matriz[i][j]+""); //Ponemos su valor como texto para mostrar el número de minas alrededor (concatenado con uan cadena vacía para que sea String y no int)
                         if(casilla.getText().equals("0")) casilla.setBackground(bordeFondoRojo); //Además, si no tiene minas alrededor el fondo será rojo claro
                         casilla.setTag("Descubierta"); //Marcamos que está descubierta en su tag
@@ -416,6 +437,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    /**
+     * Método usado durante el desarrollo que imprime por consola la matriz, para comprobar que las posiciones del GridLayout concuerdan con las de la matriz interna
+     */
     public void imprimirMatriz(){
         for(int i=0;i<filas;i++) {
             for(int j=0;j<columnas;j++) {
@@ -426,28 +451,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Método que reproduce un sonido recibido
+     * @param soundId el id dle sonido a reproducir
+     */
+    public void playSound(int soundId){
+        mp= MediaPlayer.create(getApplicationContext(),soundId);
+        mp.start(); //Reproducimos el sonido cuyo id coincida con el recibido
+    }
+
+    /**
      * Método que muestra un mensaje al terminar la partida
      * @param mensaje El mensaje a mostrar en el diálogo
      * @param victoria Variable que nos dice si se ha terminado la partida porque el usuario ha ganado o porque ha perdido
      */
     private void mostrarDialogoFinPartida(String mensaje, boolean victoria) {
         dialogo = new AlertDialog.Builder(this); //Inicializamos el diálogo
-        if(victoria) dialogo.setTitle("VICTORIA"); //Si el usuario ha ganado, el título será "VICTORIA"
-        else dialogo.setTitle("DERROTA"); //Si no, será "DERROTA"
+        if(victoria) { //Si el usuario ha ganado
+            playSound(R.raw.victoria); //Reproducimos el sonido de victoria
+            dialogo.setTitle("VICTORIA"); //El título será "VICTORIA"
+        }
+        else { //Si ha perdido
+            playSound(R.raw.derrota); //Reproducimos el sonido de derrota
+            dialogo.setTitle("DERROTA"); //El título será "DERROTA"
+        }
         dialogo.setCancelable(false); //Establecemos que no es cancelable para que no se pueda cerrar al pulsar en otro lado
         dialogo.setMessage(mensaje); //Ponemos el mensaje recibido en el diálogo
         dialogo.setPositiveButton("Jugar otra vez", new DialogInterface.OnClickListener() { //Ponemos un botón para jugar de nuevo
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                dialogoAbierto=false; //Ya no hay diálogo abierto
                 reiniciarJuego(); //Reiniciamos el juego
             }
         });
         dialogo.setNegativeButton("Salir", new DialogInterface.OnClickListener() { //Ponemos un botón para salir de la app
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                dialogoAbierto=false;
                 finish(); //Terminamos la actividad
             }
         });
+        dialogoAbierto=true;
         dialogo.show(); //Mostramos el diálogo
     }
 
@@ -480,9 +523,10 @@ public class MainActivity extends AppCompatActivity {
         dialogo.setMessage(instruccionesMensaje); //Establecemos el mensaje del diálogo
         dialogo.setPositiveButton("OK", new DialogInterface.OnClickListener() { //Ponemos un botón para cerrarlo
             public void onClick(DialogInterface dialog, int id) {
-                //El botón no hace nada extra
+                dialogoAbierto=false;//Ya no hay diálogo abierto
             }
         });
+        dialogoAbierto=true;
         dialogo.show(); //Mostramos el diálogo
     }
 
@@ -502,9 +546,11 @@ public class MainActivity extends AppCompatActivity {
         });
         dialogo.setPositiveButton("Volver", new DialogInterface.OnClickListener() { //Botón para cerrar la configuración
             public void onClick(DialogInterface dialog, int id) {
+                dialogoAbierto=false;//Ya no hay diálogo abierto
                 Toast.makeText(getApplicationContext(),"La nueva dificultad se aplicará en la próxima partida", Toast.LENGTH_SHORT).show(); //Informamos al usuario de que la próxima partida tendrá la nueva dificultad
             }
         });
+        dialogoAbierto=true;
         dialogo.show(); //Mostramos el diálogo
     }
 
@@ -525,8 +571,10 @@ public class MainActivity extends AppCompatActivity {
                 iconoMinaMuerta=iconosMinasMuertas[which]; //Actualizamos el icono de mina muerta
                 Toast.makeText(getApplicationContext(),"Icono cambiado a "+opciones[which], Toast.LENGTH_SHORT).show(); //Informamos al usuario del nuevo icono
                 actualizarMinas(); //Actualizamos las minas ya puestas
+                dialogoAbierto=false;//Ya no hay diálogo abierto
             }
         });
+        dialogoAbierto=true;
         dialogo.show(); //Mostramos el diálogo
     }
 

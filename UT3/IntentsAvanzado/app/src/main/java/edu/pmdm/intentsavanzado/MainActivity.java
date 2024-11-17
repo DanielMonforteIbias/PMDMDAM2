@@ -1,11 +1,11 @@
 package edu.pmdm.intentsavanzado;
 
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -51,7 +51,12 @@ public class MainActivity extends AppCompatActivity {
         btnPaginaWeb.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_VIEW,Uri.parse(paginaWeb));
+                if (!Patterns.WEB_URL.matcher(paginaWeb).matches()) { //Si la variable paginaWeb no es una URL válida
+                    String query = Uri.encode(paginaWeb);
+                    paginaWeb="https://www.google.com/search?q=" + query; //Haremos una búsqueda en Google
+                }
+                //Si paginaWeb era una URL válida se abrirá directamente en el navegador
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(paginaWeb)); //Hacemos el intent
                 startActivity(intent);
             }
         });
@@ -61,11 +66,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(correo.equals(""))showToast("El correo no se ha configurado");
                 else {
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.setType("message/rfc822");
-                    intent.putExtra(Intent.EXTRA_EMAIL, new String[]{correo});
-                    intent.putExtra(Intent.EXTRA_SUBJECT, asunto);
-                    intent.putExtra(Intent.EXTRA_TEXT, mensaje);
+                    Intent intent = new Intent(Intent.ACTION_SENDTO);
+                    String uriText = "mailto:" + Uri.encode(correo) + "?subject=" + Uri.encode(asunto) + "&body=" + Uri.encode(mensaje); //Crear el Uri con destinatario, asunto y mensaje. Al tener mailto solo dejara usar apps de correo
+                    intent.setData(Uri.parse((uriText))); //Poner los datos del uri en el intent
                     startActivity(Intent.createChooser(intent, "Elige aplicacion:"));
                 }
             }
