@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">UT2_PruebaRecyclerView</string>
+    <string name="elige">Elige una opción:</string>
+    <string name="solucion">Solución:</string>
+    <string name="titulo">Título:</string>
+    <string name="subtitulo">Subtítulo:</string>
+</resources>
