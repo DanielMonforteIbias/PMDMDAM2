@@ -55,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
                     String query = Uri.encode(paginaWeb);
                     paginaWeb="https://www.google.com/search?q=" + query; //Haremos una búsqueda en Google
                 }
+                if (!paginaWeb.startsWith("http://") && !paginaWeb.startsWith("https://")) { //Hacemos esta comprobación por si el usuario pone algo como "wikipedia.www". En lugar de lanzar una excepcion, le llevara a Google, aunque dirá que no se encuentra el sitio web
+                    paginaWeb ="http://" + paginaWeb;
+                }
                 //Si paginaWeb era una URL válida se abrirá directamente en el navegador
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(paginaWeb)); //Hacemos el intent
                 startActivity(intent);

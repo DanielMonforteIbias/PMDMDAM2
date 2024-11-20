@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
         boton=findViewById(R.id.btnMain);
         DataSource.añadirLibrosPrueba();
         crearListeners();
-
         boton.setOnClickListener(onClickListenerAgregarLibro); //En un primer momento ponemos el onCLickListener de agregar libros
+
         //Launcher de AddBookActivity. Obtendremos lo que se haya ingresado y lo meteremos en la lista
         addBookActivityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -73,18 +73,21 @@ public class MainActivity extends AppCompatActivity {
         onClickListenerVolver=new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView, new BookListFragment()).commit(); //Reemplazamos el fragment actual por el de BookListFragment
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView, new BookListFragment()).addToBackStack(null).commit(); //Reemplazamos el fragment actual por el de BookListFragment
             }
         };
         //Listener que se ejecuta cuando hay cambios en el back stack, como reemplazar fragmentos
         getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
+                System.out.println("a");
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView); //Obtenemos el fragmento
                 if (currentFragment instanceof BookDetailFragment) { //Si es de tipo BookDetailFragment
+                    System.out.println("a");
                     boton.setText("Volver"); //Ponemos "Volver" en el botón
                     boton.setOnClickListener(onClickListenerVolver); //Le damos el listener de volver
                 } else if (currentFragment instanceof BookListFragment) { //Si es de tipo BookListFragment
+                    System.out.println("b");
                     boton.setText("Agregar libro"); //Ponemos "Agregar libro" en el botón
                     boton.setOnClickListener(onClickListenerAgregarLibro); //Le damos el Listener de agregar libros
                 }

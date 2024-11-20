@@ -44,7 +44,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder>{
             Bundle args = new Bundle();
             args.putSerializable("Libro", libro);
             detallesFragment.setArguments(args);
-            fragmentManager.beginTransaction().replace(R.id.fragmentContainerView, detallesFragment).commit();
+            fragmentManager.beginTransaction().replace(R.id.fragmentContainerView, detallesFragment).addToBackStack(null).commit();
         }
     }
     @NonNull
