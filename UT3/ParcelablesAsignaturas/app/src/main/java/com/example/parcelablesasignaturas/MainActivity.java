@@ -36,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        DataSource.leerJSONAsignaturas(this); //Leemos el JSON con las asignaturas
+        for(Asignatura a:DataSource.ASIGNATURAS){
+            System.out.println(a.getNombre());
+        }
         //Inicializamos vistas
         listaAsignaturas=findViewById(R.id.listaAsignaturas);
         anadirAsignatura=findViewById(R.id.btnAnadirAsignatura);

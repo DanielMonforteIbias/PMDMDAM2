@@ -7,58 +7,30 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link BookDetailFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class BookDetailFragment extends Fragment {
+    private TextView textViewTitulo;
+    private TextView textViewAutor;
+    private TextView textViewAño;
+    private TextView textViewDescripcion;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public BookDetailFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment BookDetailFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static BookDetailFragment newInstance(String param1, String param2) {
-        BookDetailFragment fragment = new BookDetailFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View vista=inflater.inflate(R.layout.fragment_book_detail, container, false);
+        Book libro =(Book)getArguments().getSerializable("Libro"); //Obtenemos el libro que se ha pasado en el Bundle al crear el fragmento
+        //Inicializamos las vistas
+        textViewTitulo = vista.findViewById(R.id.txtTituloDetalles);
+        textViewAutor = vista.findViewById(R.id.txtAutorDetalles);
+        textViewAño=vista.findViewById(R.id.txtAñoDetalles);
+        textViewDescripcion=vista.findViewById(R.id.txtDescripcionDetalles);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_book_detail, container, false);
+        //Ponemos la información del libro en los TextView
+        textViewTitulo.setText(libro.getTitulo());
+        textViewAutor.setText(libro.getAutor());
+        textViewAño.setText(libro.getAño()+"");
+        textViewDescripcion.setText(libro.getDescripcion());
+        return vista;
     }
 }

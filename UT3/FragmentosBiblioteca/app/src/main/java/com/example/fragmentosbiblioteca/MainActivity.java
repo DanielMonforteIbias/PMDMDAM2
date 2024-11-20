@@ -15,11 +15,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
 
 public class MainActivity extends AppCompatActivity {
     private FragmentContainerView fragmentContainer;
     private Button boton;
+
+    private View.OnClickListener onClickListenerVolver;
+    private View.OnClickListener onClickListenerAgregarLibro;
 
     private ActivityResultLauncher<Intent> addBookActivityLauncher;
     @Override
@@ -34,14 +39,10 @@ public class MainActivity extends AppCompatActivity {
         });
         fragmentContainer=findViewById(R.id.fragmentContainerView);
         boton=findViewById(R.id.btnMain);
-        boton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), AddBookActivity.class);
-                addBookActivityLauncher.launch(intent); //Lanzamos la actividad de AddBook
-            }
-        });
+        DataSource.añadirLibrosPrueba();
+        crearListeners();
 
+        boton.setOnClickListener(onClickListenerAgregarLibro); //En un primer momento ponemos el onCLickListener de agregar libros
         //Launcher de AddBookActivity. Obtendremos lo que se haya ingresado y lo meteremos en la lista
         addBookActivityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -50,11 +51,44 @@ public class MainActivity extends AppCompatActivity {
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             Intent data = result.getData();
-                            Book libro=data.getParcelableExtra("Libro");
-                            DataSource.LIBROS.add(libro);
-
+                            Book libro=data.getParcelableExtra("Libro"); //Obtenemos el objeto Libro
+                            DataSource.LIBROS.add(libro); //Lo añadimos al ArrayList
+                            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView); //Encontramos el fragmento con el RecyclerView
+                            if (fragment instanceof BookListFragment) { //Si es de tipo BookListFragment
+                                ((BookListFragment) fragment).adaptador.notifyItemInserted(DataSource.LIBROS.size()-1); //Notificamos a su adaptador
+                            }
                         }
                     }
                 });
+    }
+
+    public void crearListeners(){
+        onClickListenerAgregarLibro=new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), AddBookActivity.class);
+                addBookActivityLauncher.launch(intent); //Lanzamos la actividad de AddBook
+            }
+        };
+        onClickListenerVolver=new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainerView, new BookListFragment()).commit(); //Reemplazamos el fragment actual por el de BookListFragment
+            }
+        };
+        //Listener que se ejecuta cuando hay cambios en el back stack, como reemplazar fragmentos
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView); //Obtenemos el fragmento
+                if (currentFragment instanceof BookDetailFragment) { //Si es de tipo BookDetailFragment
+                    boton.setText("Volver"); //Ponemos "Volver" en el botón
+                    boton.setOnClickListener(onClickListenerVolver); //Le damos el listener de volver
+                } else if (currentFragment instanceof BookListFragment) { //Si es de tipo BookListFragment
+                    boton.setText("Agregar libro"); //Ponemos "Agregar libro" en el botón
+                    boton.setOnClickListener(onClickListenerAgregarLibro); //Le damos el Listener de agregar libros
+                }
+            }
+        });
     }
 }

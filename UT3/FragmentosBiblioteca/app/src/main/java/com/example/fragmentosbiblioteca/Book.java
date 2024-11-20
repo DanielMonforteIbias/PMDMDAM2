@@ -5,7 +5,9 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-public class Book implements Parcelable {
+import java.io.Serializable;
+
+public class Book implements Parcelable, Serializable {
     private String titulo;
     private String autor;
     private int año;
