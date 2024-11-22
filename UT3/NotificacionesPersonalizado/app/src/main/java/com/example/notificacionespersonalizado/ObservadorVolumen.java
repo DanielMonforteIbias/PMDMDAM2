@@ -22,6 +22,5 @@ public class ObservadorVolumen extends ContentObserver {
         Intent intent = new Intent("com.example.notificacionespersonalizado.VOLUMENCAMBIADO");
         intent.putExtra("Volumen", volumen);
         context.sendBroadcast(intent);
-        System.out.println("aaa");
     }
 }

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResult;
@@ -15,17 +17,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    private Button anadirAsignatura;
-    private RecyclerView listaAsignaturas;
-
-    private ActivityResultLauncher<Intent> anadirAsignaturaLauncher;
-
+    private Button botonEnviar;
+    private Button botonAñadirAsignatura;
+    private EditText editTextNombre;
+    private EditText editTextEdad;
+    private EditText editTextNotaMedia;
+    private ArrayList<Asignatura> asignaturas;
+    private ActivityResultLauncher<Intent> detallesLauncher;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,40 +38,63 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        DataSource.leerJSONAsignaturas(this); //Leemos el JSON con las asignaturas
-        for(Asignatura a:DataSource.ASIGNATURAS){
-            System.out.println(a.getNombre());
-        }
-        //Inicializamos vistas
-        listaAsignaturas=findViewById(R.id.listaAsignaturas);
-        anadirAsignatura=findViewById(R.id.btnAnadirAsignatura);
-        //Creamos el adaptador para el RecyclerView
-        AsignaturasAdapter adaptador=new AsignaturasAdapter(DataSource.ASIGNATURAS); //Creamos un adaptador con el ArrayList de asignaturas que hay en DataSource
-        listaAsignaturas.setLayoutManager(new LinearLayoutManager(this)); //Sin un layout manager, sale el mensaje "No layout manager attached; skipping layout"
-        listaAsignaturas.setAdapter(adaptador); //Establecemos el adaptador a la lista
-
-        //OnClickListener del botón anadirAsignatura
-        anadirAsignatura.setOnClickListener(new View.OnClickListener() {
+        //Inicializar vistas
+        editTextNombre=findViewById(R.id.editTextNombre);
+        editTextEdad=findViewById(R.id.editTextEdad);
+        editTextNotaMedia=findViewById(R.id.editTextNotaMedia);
+        botonAñadirAsignatura=findViewById(R.id.btnAgregarAsignatura);
+        botonEnviar=findViewById(R.id.btnEnviar);
+        //Listener enviar
+        botonEnviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), AnadirAsignatura.class);
-                anadirAsignaturaLauncher.launch(intent); //Lanzamos la actividad de añadir asignatura
+                boolean intenValido=true;
+                String nombre=editTextNombre.getText().toString();
+                String edadString=editTextEdad.getText().toString();
+                String notaMediaString=editTextNotaMedia.getText().toString();
+                int edad=0;
+                double notaMedia=0;
+                if(nombre.equals("") || edadString.equals("") || notaMediaString.equals("")){
+                    showToast("Todos los parametros deben ser rellenados");
+                    intenValido=false;
+                }
+                else{
+                    edad=Integer.parseInt(edadString);
+                    notaMedia=Integer.parseInt(notaMediaString);
+                    if(notaMedia<0 || notaMedia>10){
+                        showToast("La nota media debe estar entre 0 y 10");
+                        intenValido=false;
+                    }
+                }
+                if(intenValido){
+                    Intent intent=new Intent(getApplicationContext(),DetailsActivity.class);
+                    intent.putExtra("Nombre",nombre);
+                    intent.putExtra("Edad",edad);
+                    intent.putExtra("NotaMedia",notaMedia);
+                    detallesLauncher.launch(intent);
+                }
             }
         });
+        //Listener añadir asignatura
+        botonAñadirAsignatura.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        //Launcher de anadirAsignatura. Obtendremos lo que se haya ingresado y lo meteremos en la lista
-        anadirAsignaturaLauncher = registerForActivityResult(
+            }
+        });
+        //Launcher actividad detalles
+        detallesLauncher=registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             Intent data = result.getData();
-                            Asignatura asignatura=data.getParcelableExtra("Asignatura"); //Obtenemos la asignatura de la otra actividad
-                            DataSource.ASIGNATURAS.add(asignatura); //Lo almacenamos en el ArrayList de DataSoruce
-                            adaptador.notifyItemInserted(DataSource.ASIGNATURAS.size() - 1); //Notificamos a la lista para que renderice el nuevo elemento. Sin esta línea no aparecería en la lista
                         }
                     }
                 });
+    }
+    public void showToast(String mensaje){
+        Toast.makeText(this,mensaje,Toast.LENGTH_SHORT).show();
     }
 }

@@ -12,11 +12,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
 
 public class RecibidorVolumen extends BroadcastReceiver {
+    int volumenNuevo=0;
     @Override
     public void onReceive(Context context, Intent intent) {
-        System.out.println("aaaaaa");
         if("com.example.notificacionespersonalizado.VOLUMENCAMBIADO".equals(intent.getAction())){
-            creaNotificacion("Volumen cambiado a "+intent.getIntExtra("Volumen",0),context);
+            volumenNuevo=intent.getIntExtra("Volumen",0);
+            creaNotificacion("Volumen cambiado a "+volumenNuevo,context);
         }
     }
 
@@ -33,6 +34,7 @@ public class RecibidorVolumen extends BroadcastReceiver {
                 .setContentText(texto)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         Intent resultadoIntent = new Intent(context, NotificacionPulsada.class);
+        resultadoIntent.putExtra("Volumen",volumenNuevo);
         TaskStackBuilder pila = TaskStackBuilder.create(context);
         pila.addParentStack(MainActivity.class);
         pila.addNextIntent(resultadoIntent);
