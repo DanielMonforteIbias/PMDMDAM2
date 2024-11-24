@@ -19,19 +19,18 @@ import com.example.prc3_danielmonforte.databinding.ActivityBikeBinding;
 public class BikeActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
-    private ActivityBikeBinding binding;
+    private ActivityBikeBinding binding; //Variable para el binding de esta actividad
 
-    public static SharedPreferences sharedPreferences;
-    public static SharedPreferences.Editor editor;
-    public static String fecha=""; //Variable para guardar la fecha seleccionada en el CalendarView de FirstFragment
+    public static SharedPreferences sharedPreferences; //Variable para guardar el archivo de preferencias
+    public static SharedPreferences.Editor editor; //Editor del archivo de preferencias
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPreferences = getSharedPreferences("Preferencias", Context.MODE_PRIVATE); //Obtenemos el archivo de preferencias
         editor=sharedPreferences.edit(); //Inicializamos el editor
-        fecha=sharedPreferences.getString("Fecha",""); //Obtenemos la fecha guardada, o vacía si no existe
-        binding = ActivityBikeBinding.inflate(getLayoutInflater());
+        BikesContent.selectedDate=sharedPreferences.getString("Fecha",""); //Obtenemos la fecha guardada, o vacía si no existe, y la guardamos en la variable estática de BikesContect
+        binding = ActivityBikeBinding.inflate(getLayoutInflater()); //Inicializamos la variable para el ViewBinding
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
@@ -41,9 +40,14 @@ public class BikeActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        BikesContent.loadBikesFromJSON(this); //Cargamos los datos del JSON de bicicletas en la lista estática de BikesContent
+        if(BikesContent.ITEMS.isEmpty())BikesContent.loadBikesFromJSON(this); //Cargamos los datos del JSON de bicicletas en la lista estática de BikesContent, solo si no hay datos cargados
+        //Se comprueba para que se haga solo una vez, pues si volviesemos atras a Login y volviesemos a iniciar sesión se crearían una segunda vez
     }
 
+    /**
+     * Método que permite navegar hacia arriba entre fragmentos
+     * @return
+     */
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_bike);
@@ -51,6 +55,9 @@ public class BikeActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
+    /**
+     * Método que se ejecuta al terminar la actividad
+     */
     @Override
     public void finish() {
         super.finish();

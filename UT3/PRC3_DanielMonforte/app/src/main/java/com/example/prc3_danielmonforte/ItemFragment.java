@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.example.prc3_danielmonforte.bikes.BikesContent;
-import com.example.prc3_danielmonforte.placeholder.PlaceholderContent;
 
 /**
  * A fragment representing a list of Items.
@@ -31,20 +30,18 @@ public class ItemFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
         // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
+        if (view instanceof RecyclerView) { //Si la vista es RecyclerView
+            Context context = view.getContext(); //Obtenemos el contexto
             RecyclerView recyclerView = (RecyclerView) view;
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            MyItemRecyclerViewAdapter adaptador=new MyItemRecyclerViewAdapter(BikesContent.ITEMS);
-            recyclerView.setAdapter(adaptador);
+            recyclerView.setLayoutManager(new LinearLayoutManager(context)); //Le damos un LinearLayout
+            MyItemRecyclerViewAdapter adaptador=new MyItemRecyclerViewAdapter(BikesContent.ITEMS); //Creamos un adaptador con la lista de bicis de BikesContect
+            recyclerView.setAdapter(adaptador); //Ponemos el adaptador al RecyclerView
             if(adaptador.getItemCount()==0) Toast.makeText(getContext(),"No existen datos de bicicletas",Toast.LENGTH_LONG).show(); //Si no hay items en la lista, avisamos al usuario
         }
         return view;

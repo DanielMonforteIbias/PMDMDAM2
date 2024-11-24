@@ -26,7 +26,12 @@ public class MainActivity extends AppCompatActivity {
     private EditText editTextNombre;
     private EditText editTextEdad;
     private EditText editTextNotaMedia;
-    private ArrayList<Asignatura> asignaturas;
+    private EditText editTextNombreAsignatura;
+    private EditText editTextNotaAsignatura;
+
+    private int maximoAsignaturas=5;
+
+    private ArrayList<Asignatura> asignaturas=new ArrayList<Asignatura>();
     private ActivityResultLauncher<Intent> detallesLauncher;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
         editTextNotaMedia=findViewById(R.id.editTextNotaMedia);
         botonAñadirAsignatura=findViewById(R.id.btnAgregarAsignatura);
         botonEnviar=findViewById(R.id.btnEnviar);
+        editTextNombreAsignatura=findViewById(R.id.editTextNombreAsignatura);
+        editTextNotaAsignatura=findViewById(R.id.editTextNotaAsignatura);
         //Listener enviar
         botonEnviar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,9 +75,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if(intenValido){
                     Intent intent=new Intent(getApplicationContext(),DetailsActivity.class);
-                    intent.putExtra("Nombre",nombre);
-                    intent.putExtra("Edad",edad);
-                    intent.putExtra("NotaMedia",notaMedia);
+                    Estudiante e=new Estudiante(nombre,edad,notaMedia,asignaturas);
+                    intent.putExtra("Estudiante",e);
                     detallesLauncher.launch(intent);
                 }
             }
@@ -79,7 +85,37 @@ public class MainActivity extends AppCompatActivity {
         botonAñadirAsignatura.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if(asignaturas.size()<maximoAsignaturas){
+                    String nombreAsignatura=editTextNombreAsignatura.getText().toString();
+                    String notaAsignaturaString=editTextNotaAsignatura.getText().toString();
+                    double notaAsignatura=0;
+                    boolean asignaturaValida=true;
+                    if(nombreAsignatura.equals("")||notaAsignaturaString.equals((""))){
+                        showToast("Todos los campos de la asignatura deben estar rellenos");
+                        asignaturaValida=false;
+                    }
+                    else{
+                        notaAsignatura=Double.parseDouble(notaAsignaturaString);
+                        if(notaAsignatura<0 || notaAsignatura>10){
+                            showToast("La nota de la asignatura debe estar entre 0 y 10");
+                            asignaturaValida=false;
+                        }
+                    }
+                    for(Asignatura a:asignaturas){
+                        if(a.getNombre().equals(nombreAsignatura)){
+                            showToast("Ya existe una asignatura con ese nombre");
+                            asignaturaValida=false;
+                        }
+                    }
+                    if(asignaturaValida) {
+                        asignaturas.add(new Asignatura(nombreAsignatura,notaAsignatura));//Añadimos la asignatura al ArrayList
+                        showToast(nombreAsignatura+" añadida");
+                        //Vaciamos campos
+                        editTextNombreAsignatura.setText("");
+                        editTextNotaAsignatura.setText("");
+                    }
+                }
+                else showToast("El maximo de asignaturas es "+maximoAsignaturas);
             }
         });
         //Launcher actividad detalles

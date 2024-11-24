@@ -17,7 +17,7 @@ public class BikesContent {
 
     //List of all the bikes to be listed in the RecyclerView
     public static List<Bike> ITEMS = new ArrayList<Bike>();
-    public static String selectedDate;
+    public static String selectedDate=""; //Inicializamos la variable a cadena vacia, para evitar errores nulos
 
     public static void loadBikesFromJSON(Context c) {
         String json = null;
@@ -63,52 +63,25 @@ public class BikesContent {
             return email;
         }
 
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
         public Bitmap getPhoto() {
             return photo;
-        }
-
-        public void setPhoto(Bitmap photo) {
-            this.photo = photo;
         }
 
         public String getOwner() {
             return owner;
         }
 
-        public void setOwner(String owner) {
-            this.owner = owner;
-        }
-
         public String getDescription() {
             return description;
         }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
 
         public String getCity() {
             return city;
         }
 
-        public void setCity(String city) {
-            this.city = city;
-        }
-
         public String getLocation() {
             return location;
         }
-
-        public void setLocation(String location) {
-            this.location = location;
-        }
-
-
 
         public Bike(Bitmap photo, String owner, String description, String city, String location, String email) {
             this.photo = photo;

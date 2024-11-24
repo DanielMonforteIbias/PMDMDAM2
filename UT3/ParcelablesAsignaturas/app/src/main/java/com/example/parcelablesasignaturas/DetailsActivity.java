@@ -17,9 +17,9 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView textViewNombre;
     private TextView textViewEdad;
     private TextView textViewNotaMedia;
-    private String nombre="";
-    private int edad=0;
-    private double notaMedia=0;
+    private TextView textViewAsignaturas;
+    private TextView textViewJson;
+    private Estudiante estudiante;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,16 +31,22 @@ public class DetailsActivity extends AppCompatActivity {
             return insets;
         });
         Intent i=getIntent();
-        nombre=i.getStringExtra("Nombre");
-        edad=i.getIntExtra("Edad",0);
-        notaMedia=i.getDoubleExtra("NotaMedia",0);
+        estudiante=i.getParcelableExtra("Estudiante"); //Obtenemos el estudiante del intent
+        //Inicializamos vistas
         textViewNombre=findViewById(R.id.txtNombreDetalles);
         textViewEdad=findViewById(R.id.txtEdadDetalles);
         textViewNotaMedia=findViewById(R.id.txtNotaMediaDetalles);
-        textViewNombre.setText("Nombre: "+nombre);
-        textViewEdad.setText("Edad: "+edad);
-        textViewNotaMedia.setText("Nota media: "+notaMedia);
+        textViewAsignaturas=findViewById(R.id.txtAsignaturas);
+        textViewJson=findViewById(R.id.txtJSON);
+        //Ponemos los datos
+        textViewNombre.setText("Nombre: "+estudiante.getNombre());
+        textViewEdad.setText("Edad: "+estudiante.getEdad());
+        textViewNotaMedia.setText("Nota media: "+estudiante.getNotaMedia());
+        textViewAsignaturas.setText("Asignaturas: "+estudiante.getAsignaturas().toString());
+
+        textViewJson.setText(estudiante.toString()); //Directamente ponemos el toString del estudiante
         botonVolver=findViewById(R.id.btnVolver);
+        //Listener del boton para volver a la pantalla principal
         botonVolver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -16,7 +16,7 @@ import com.example.prc3_danielmonforte.databinding.ActivityConfiguracionBinding;
 import com.example.prc3_danielmonforte.databinding.ActivityMainBinding;
 
 public class Configuracion extends AppCompatActivity {
-    private ActivityConfiguracionBinding configuracionBinding;
+    private ActivityConfiguracionBinding configuracionBinding; //Variable para el binding de configuracion
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +37,11 @@ public class Configuracion extends AppCompatActivity {
         configuracionBinding.switchModoOscuro.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(configuracionBinding.switchModoOscuro.isChecked()){
-                    System.out.println("a");
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                if(configuracionBinding.switchModoOscuro.isChecked()){ //Si está activado el switch
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES); //Ponemos el modo nocturno
                 }
-                else{
-                    System.out.println("b");
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                else{ //Si no está activado
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO); //Ponemos que no haya modo nocturno
                 }
             }
         });

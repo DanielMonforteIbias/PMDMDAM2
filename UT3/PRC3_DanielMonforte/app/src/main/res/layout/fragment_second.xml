@@ -13,11 +13,17 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <Spinner
+            android:id="@+id/spinnerFiltro"
+            android:layout_width="match_parent"
+            android:layout_height="36dp" />
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragmentContainerView"
             android:name="com.example.prc3_danielmonforte.ItemFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="8dp" />
 
         <Button
             android:id="@+id/btnSelectDate"

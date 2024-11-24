@@ -20,7 +20,7 @@ import java.util.List;
 
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
-    private final List<BikesContent.Bike> lista;
+    private final List<BikesContent.Bike> lista; //Lista estática de bicis
 
     public MyItemRecyclerViewAdapter(List<BikesContent.Bike> items) {
         lista = items;
@@ -28,27 +28,26 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         return new ViewHolder(FragmentItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        holder.bicicleta = lista.get(position);
-        holder.bicicletaImageView.setImageBitmap(holder.bicicleta.getPhoto());
-        holder.ciudadTextView.setText(holder.bicicleta.getCity());
-        holder.propietarioTextView.setText(holder.bicicleta.getOwner());
-        holder.direccionTextView.setText(holder.bicicleta.getLocation());
-        holder.descripcionTextView.setText(holder.bicicleta.getDescription());
+        holder.bicicleta = lista.get(position); //Obtenemos la bici en esa posicion
+        holder.bicicletaImageView.setImageBitmap(holder.bicicleta.getPhoto()); //Ponemos la imagen de la bici en el ImageView
+        holder.ciudadTextView.setText(holder.bicicleta.getCity()); //Ponemos la ciudad de la bici en el TextView de ciudad
+        holder.propietarioTextView.setText(holder.bicicleta.getOwner()); //Ponemos el propietario de la bici en el TextView de propietario
+        holder.direccionTextView.setText(holder.bicicleta.getLocation()); //Ponemos la ubicacion de la bici en el TextView de direccion
+        holder.descripcionTextView.setText(holder.bicicleta.getDescription()); //Ponemos la descripcion de la bici en el TextView de direccion
+        //Listener del ImageButton de enviar correo
         holder.correoImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BikesContent.Bike bici=holder.bicicleta;
-                String correo=bici.getEmail();
-                String asunto="Reserva ShareMyBike";
-                String mensaje="Dear Mr/Mrs "+bici.getOwner()+":\n\nI'd like to use your bike at "+bici.getLocation()+" ("+bici.getCity()+") for the following date: "+BikeActivity.fecha+"\n\nCan you confirm its availability?\nKindest regards"; //Construimos el mensaje con los datos
-                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                BikesContent.Bike bici=holder.bicicleta; //Guardamos la bici del holder en
+                String correo=bici.getEmail(); //El receptor sera el correo de la bici
+                String asunto="Reserva ShareMyBike"; //Se ha elegido que el asunto sea "Reserva ShareMyBike", pues no se ha especificado ninguno
+                String mensaje="Dear Mr/Mrs "+bici.getOwner()+":\n\nI'd like to use your bike at "+bici.getLocation()+" ("+bici.getCity()+") for the following date: "+BikesContent.selectedDate+"\n\nCan you confirm its availability?\nKindest regards"; //Construimos el mensaje con los datos
+                Intent intent = new Intent(Intent.ACTION_SENDTO); //Creamos un Intent de tipo ACTION_SENDTO
                 String uriText = "mailto:" + Uri.encode(correo) + "?subject=" + Uri.encode(asunto) + "&body=" + Uri.encode(mensaje); //Crear el Uri con destinatario, asunto y mensaje. Al tener mailto solo dejara usar apps de correo
                 intent.setData(Uri.parse((uriText))); //Poner los datos del uri en el intent
                 v.getContext().startActivity(Intent.createChooser(intent, "Elige una aplicacion")); //Iniciar el intent (para ello tenemos que acceder al contexto de la vista que activó el callback)
@@ -59,19 +58,21 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     @Override
     public int getItemCount() {
         return lista.size();
-    }
+    } //Devolvemos el tamaño de la lista
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        //Variables de las vistas
         public final ImageView bicicletaImageView;
         public final TextView ciudadTextView;
         public final TextView propietarioTextView;
         public final TextView direccionTextView;
         public final TextView descripcionTextView;
         public final ImageButton correoImageButton;
-        public BikesContent.Bike bicicleta;
+        public BikesContent.Bike bicicleta; //Variable para el objeto Bike
 
         public ViewHolder(FragmentItemBinding binding) {
             super(binding.getRoot());
+            //Inicializamos las vistas con el equivalente que hay en el binding
             bicicletaImageView=binding.imageViewBicicleta;
             ciudadTextView = binding.txtCiudadItem;
             propietarioTextView = binding.txtPropietarioItem;
