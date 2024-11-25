@@ -42,7 +42,11 @@ public class DetailsActivity extends AppCompatActivity {
         textViewNombre.setText("Nombre: "+estudiante.getNombre());
         textViewEdad.setText("Edad: "+estudiante.getEdad());
         textViewNotaMedia.setText("Nota media: "+estudiante.getNotaMedia());
-        textViewAsignaturas.setText("Asignaturas: "+estudiante.getAsignaturas().toString());
+        String asignaturas="";//Variable para guardar solo los nombres de las asignaturas
+        for(Asignatura a:estudiante.getAsignaturas()){ //Recorremos la lista de asignaturas
+            asignaturas+=a.getNombre()+"   ";
+        }
+        textViewAsignaturas.setText("Asignaturas: "+asignaturas);
 
         textViewJson.setText(estudiante.toString()); //Directamente ponemos el toString del estudiante
         botonVolver=findViewById(R.id.btnVolver);

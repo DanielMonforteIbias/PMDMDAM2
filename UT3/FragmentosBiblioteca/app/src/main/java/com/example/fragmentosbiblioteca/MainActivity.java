@@ -80,14 +80,11 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-                System.out.println("a");
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerView); //Obtenemos el fragmento
                 if (currentFragment instanceof BookDetailFragment) { //Si es de tipo BookDetailFragment
-                    System.out.println("a");
                     boton.setText("Volver"); //Ponemos "Volver" en el botón
                     boton.setOnClickListener(onClickListenerVolver); //Le damos el listener de volver
                 } else if (currentFragment instanceof BookListFragment) { //Si es de tipo BookListFragment
-                    System.out.println("b");
                     boton.setText("Agregar libro"); //Ponemos "Agregar libro" en el botón
                     boton.setOnClickListener(onClickListenerAgregarLibro); //Le damos el Listener de agregar libros
                 }

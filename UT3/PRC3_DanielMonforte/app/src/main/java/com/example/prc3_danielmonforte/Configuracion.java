@@ -30,9 +30,7 @@ public class Configuracion extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        configuracionBinding.switchModoOscuro.setChecked((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES); //Si el modo oscuro está activado, aparecerá activado el switch
-        //La linea (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES sirve para detectar si el móvil tiene activado por defecto el modo oscuro, la usamos para que salga activo el modo oscuro aunque no se haya activado en nuestra app sino en el dispositivo
-
+        comprobarModoOscuroActivado(); //Comprobamos si el usuario tiene activado el modo oscuro
         //Listener para el switch de modo oscuro
         configuracionBinding.switchModoOscuro.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -52,5 +50,13 @@ public class Configuracion extends AppCompatActivity {
                 finish(); //Finalizamos la actividad de configuracion
             }
         });
+    }
+
+    /**
+     * Método que comprueba si el dispositivo tiene el modo oscuro activado para el sistema, y marca el switch en dicho caso
+     */
+    public void comprobarModoOscuroActivado(){
+        configuracionBinding.switchModoOscuro.setChecked((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES); //Si el modo oscuro está activado, aparecerá activado el switch
+        //La linea (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES sirve para detectar si el móvil tiene activado por defecto el modo oscuro, la usamos para que salga activo el modo oscuro aunque no se haya activado en nuestra app sino en el dispositivo
     }
 }

@@ -27,9 +27,7 @@ public class BikeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPreferences = getSharedPreferences("Preferencias", Context.MODE_PRIVATE); //Obtenemos el archivo de preferencias
-        editor=sharedPreferences.edit(); //Inicializamos el editor
-        BikesContent.selectedDate=sharedPreferences.getString("Fecha",""); //Obtenemos la fecha guardada, o vacía si no existe, y la guardamos en la variable estática de BikesContect
+        inicializarPreferencias(); //Inicializamos lo relacionado con las preferencias antes de crear la vista
         binding = ActivityBikeBinding.inflate(getLayoutInflater()); //Inicializamos la variable para el ViewBinding
         setContentView(binding.getRoot());
 
@@ -44,6 +42,14 @@ public class BikeActivity extends AppCompatActivity {
         //Se comprueba para que se haga solo una vez, pues si volviesemos atras a Login y volviesemos a iniciar sesión se crearían una segunda vez
     }
 
+    /**
+     * Método que inicializa la variable de SharedPreferences y su editor, y recupera una fecha guardada si la había
+     */
+    public void inicializarPreferencias(){
+        sharedPreferences = getSharedPreferences("Preferencias", Context.MODE_PRIVATE); //Obtenemos el archivo de preferencias
+        editor=sharedPreferences.edit(); //Inicializamos el editor
+        BikesContent.selectedDate=sharedPreferences.getString("Fecha",""); //Obtenemos la fecha guardada, o vacía si no existe, y la guardamos en la variable estática de BikesContect
+    }
     /**
      * Método que permite navegar hacia arriba entre fragmentos
      * @return

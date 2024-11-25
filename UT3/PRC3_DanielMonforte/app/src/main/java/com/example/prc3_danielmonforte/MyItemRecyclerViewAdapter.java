@@ -4,6 +4,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -20,7 +21,7 @@ import java.util.List;
 
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
-    private final List<BikesContent.Bike> lista; //Lista estática de bicis
+    private final List<BikesContent.Bike> lista; //Lista de bicis
 
     public MyItemRecyclerViewAdapter(List<BikesContent.Bike> items) {
         lista = items;
@@ -43,14 +44,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         holder.correoImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                BikesContent.Bike bici=holder.bicicleta; //Guardamos la bici del holder en
-                String correo=bici.getEmail(); //El receptor sera el correo de la bici
-                String asunto="Reserva ShareMyBike"; //Se ha elegido que el asunto sea "Reserva ShareMyBike", pues no se ha especificado ninguno
-                String mensaje="Dear Mr/Mrs "+bici.getOwner()+":\n\nI'd like to use your bike at "+bici.getLocation()+" ("+bici.getCity()+") for the following date: "+BikesContent.selectedDate+"\n\nCan you confirm its availability?\nKindest regards"; //Construimos el mensaje con los datos
-                Intent intent = new Intent(Intent.ACTION_SENDTO); //Creamos un Intent de tipo ACTION_SENDTO
-                String uriText = "mailto:" + Uri.encode(correo) + "?subject=" + Uri.encode(asunto) + "&body=" + Uri.encode(mensaje); //Crear el Uri con destinatario, asunto y mensaje. Al tener mailto solo dejara usar apps de correo
-                intent.setData(Uri.parse((uriText))); //Poner los datos del uri en el intent
-                v.getContext().startActivity(Intent.createChooser(intent, "Elige una aplicacion")); //Iniciar el intent (para ello tenemos que acceder al contexto de la vista que activó el callback)
+                enviarMensajeReserva(holder.bicicleta,v.getContext()); //Enviamos un mensaje al propietario de esta bicicleta
             }
         });
     }
@@ -59,6 +53,21 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public int getItemCount() {
         return lista.size();
     } //Devolvemos el tamaño de la lista
+
+    /**
+     * Método que construye y lanza un Intent de tipo ACTION_SENDTO al propietario de una bicicleta con sus datos
+     * @param bici la bicicleta que se va a reservar
+     * @param c el contexto de la vista que llamó al método
+     */
+    public void enviarMensajeReserva(BikesContent.Bike bici, Context c){
+        String correo=bici.getEmail(); //El receptor sera el correo de la bici
+        String asunto="Reserva ShareMyBike"; //Se ha elegido que el asunto sea "Reserva ShareMyBike", pues no se ha especificado ninguno
+        String mensaje="Dear Mr/Mrs "+bici.getOwner()+":\n\nI'd like to use your bike at "+bici.getLocation()+" ("+bici.getCity()+") for the following date: "+BikesContent.selectedDate+"\n\nCan you confirm its availability?\nKindest regards"; //Construimos el mensaje con los datos
+        Intent intent = new Intent(Intent.ACTION_SENDTO); //Creamos un Intent de tipo ACTION_SENDTO
+        String uriText = "mailto:" + Uri.encode(correo) + "?subject=" + Uri.encode(asunto) + "&body=" + Uri.encode(mensaje); //Crear el Uri con destinatario, asunto y mensaje. Al tener mailto solo dejara usar apps de correo
+        intent.setData(Uri.parse((uriText))); //Poner los datos del uri en el intent
+        c.startActivity(Intent.createChooser(intent, "Elige una aplicacion")); //Iniciar el intent (para ello tenemos que acceder al contexto de la vista que activó el callback)
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         //Variables de las vistas

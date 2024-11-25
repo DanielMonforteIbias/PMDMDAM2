@@ -21,8 +21,8 @@ public class SecondFragment extends Fragment {
 
     private FragmentSecondBinding binding; //Variable para el binding de este fragmento
     ArrayList<String>opcionesFiltros=new ArrayList<String>(); //ArrayList para las opciones del Spinner de filtros
-    private Fragment fragmentLista;
-    private RecyclerView lista;
+    private Fragment fragmentLista; //Variable para guardar el fragmento que contiene el RecyclerView
+    private RecyclerView lista; //Variable para guardar el RecyclerView
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentSecondBinding.inflate(inflater, container, false); //Inicializamos la variable del binding
