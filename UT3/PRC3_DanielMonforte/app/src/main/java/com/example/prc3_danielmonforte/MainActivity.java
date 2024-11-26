@@ -11,8 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +21,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,8 +28,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.prc3_danielmonforte.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
-    private String correo=""; //Variable para el correo que introduce el usuario
-    private String direccion=""; //Variable para la direccion del usuario
+    private static String correo=""; //Variable para el correo que introduce el usuario
+    private static String direccion=""; //Variable para la direccion del usuario
     private double latitud=0; //Latitud de la ubicacion del usuario
     private double longitud=0; //Longitud de la ubicacion del usuario
     private boolean intentLoginValido=true; //Variable booleana que servira para decidir si podemos lanzar o no un intent
@@ -40,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     public final int PERMISO_UBICACION=1; //Constante para identificar el permiso de ubicacion
     private LocationManager locationManager; //LocationManager para obtener la ubicacion del usuario
     private Location ubicacion=null; //Objeto ubicacion para guardar la ubicacion del usuario
+    private static boolean pantallaActiva = true; //Variable estática para saber si estamos en esta pantalla o no
 
     private ActivityMainBinding mainBinding; //Binding para acceder a las vistas sin declarar variables y hacer findViewById
 
@@ -57,8 +55,10 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         locationManager=(LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        pedirPermisosUbicacion(); //Pedimos permisos al iniciar la aplicacion
+        if(pantallaActiva) pedirPermisosUbicacion(); //Pedimos permisos si estamos en esta pantalla
+        else actualizarUbicacion(); //Si no, intentamos actualizar la ubicacion
         crearListeners(); //Creamos los Listeners de los botones
         inicializarLaunchers(); //Inicializamos los launchers de otras actividades
     }
@@ -66,10 +66,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode==PERMISO_UBICACION)
+        if(requestCode==PERMISO_UBICACION){
             if(grantResults[0]==PackageManager.PERMISSION_GRANTED) actualizarUbicacion(); //Si se ha concedido el permiso, actualizamos la ubicacion
-            else mainBinding.txtDireccion.setText("Permisos de ubicacion denegados"); //Si no hay permisos, informamos al usuario
+        }
     }
+
 
     /**
      * Método que crea listeners para los diferentes botones e ImageButtons de esta actividad
@@ -110,6 +111,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        pantallaActiva=false; //No estamos en esta pantalla
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        pantallaActiva=true; //Sí estamos en esta pantalla
     }
 
     /**
@@ -156,38 +169,37 @@ public class MainActivity extends AppCompatActivity {
      */
     public void actualizarUbicacion(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            pedirPermisosUbicacion();
             return;
         }
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) { //Si está activado el GPS
-            ubicacion=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER); //Obtenemos la ultima ubicacion conocida
-            if (ubicacion!=null){ //Si la ubicacion no es nula
-                latitud=ubicacion.getLatitude(); //Obtenemos la latitud
-                longitud=ubicacion.getLongitude(); //Obtenemos la longitud
-                direccion ="geo:"+latitud+","+longitud; //Creamos la cadena de la Uri
-                mainBinding.txtDireccion.setText("Latitud: "+latitud+"\nLongitud: "+longitud); //Modificamos la informacion del TextView
-            }
-            else { //Si no hay ubicacion
-                showToast("No se pudo obtener la ubicacion. Tratando de obtener alguna ubicación..."); //Avisamos al usuario de que se está intentando obtener
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, new LocationListener() { //Solicitamos una actualizacion de localizacion
-                    @Override
-                    public void onLocationChanged(Location location) { //Cuando se obtiene una nueva localizacion
-                        locationManager.removeUpdates(this); //Eliminamos actualizaciones para quedarnos con la primera
-                        showToast("Se obtuvo una ubicacion!"); //Avisamos al usuario
-                        actualizarUbicacion(); //Actualizamos la ubicacion
-                    }
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-                    @Override
-                    public void onProviderEnabled(String provider) {}
-
-                    @Override
-                    public void onProviderDisabled(String provider) {}
-                });
-            }
+        ubicacion=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER); //Obtenemos la ultima ubicacion conocida
+        if (ubicacion!=null){ //Si la ubicacion no es nula
+            latitud=ubicacion.getLatitude(); //Obtenemos la latitud
+            longitud=ubicacion.getLongitude(); //Obtenemos la longitud
+            direccion ="geo:"+latitud+","+longitud; //Creamos la cadena de la Uri
+            mainBinding.txtDireccion.setText("Latitud: "+latitud+"\nLongitud: "+longitud); //Modificamos la informacion del TextView
         }
-        else showToast("El GPS no está activado"); //Si no está activado el GPS, avisamos al usuario
+        else { //Si no hay ubicacion
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, new LocationListener() { //Solicitamos una actualizacion de localizacion
+                @Override
+                public void onLocationChanged(Location location) { //Cuando se obtiene una nueva localizacion
+                    locationManager.removeUpdates(this); //Eliminamos actualizaciones para quedarnos con la primera
+                    showToast("Se obtuvo una ubicacion!"); //Avisamos al usuario
+                    actualizarUbicacion(); //Actualizamos la ubicacion
+                }
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {}
+                @Override
+                public void onProviderEnabled(String provider) { //AL activar el proveedor
+                    mainBinding.txtDireccion.setText("Buscando ubicacion..."); //Avisamos al usuario
+                    actualizarUbicacion(); //Actualizamos la ubicacion
+                }
+                @Override
+                public void onProviderDisabled(String provider) { //Al desactivar el proveedor
+                    mainBinding.txtDireccion.setText("EL GPS se ha desactivado"); //Informamos al usuario
+                    direccion=""; //Vaciamos la direccion para que no deje entrar
+                }
+            });
+        }
     }
     /**
      * Método que abre un intent en Google Maps, si es posible, con la direccion del dispositivo
@@ -205,6 +217,10 @@ public class MainActivity extends AppCompatActivity {
         intentLoginValido=true; //En un principio es true
         if(!comprobarPermisosUbicacion()){ //Si no tenemos permisos de ubicacion
             showToast("No hay permisos de ubicacion"); //Informamos al usuario
+            intentLoginValido=false; //El intent no será válido
+        }
+        else if (direccion.equals("")){ //Si hay permisos pero no ubicacion (por ejemplo, porque no hay gps)
+            showToast("No hay ubicacion"); //Informamos al usuario
             intentLoginValido=false; //El intent no será válido
         }
         if(correo.equals("")){ //Si el correo está vacío
