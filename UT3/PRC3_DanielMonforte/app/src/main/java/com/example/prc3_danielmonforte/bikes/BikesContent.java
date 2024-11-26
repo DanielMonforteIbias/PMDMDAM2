@@ -3,6 +3,7 @@ package com.example.prc3_danielmonforte.bikes;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,7 +48,7 @@ public class BikesContent {
                 ITEMS.add(new BikesContent.Bike(photo,owner,description,city,location,email));
             }
         } catch (JSONException | IOException e) {
-            e.printStackTrace();
+            Toast.makeText(c.getApplicationContext(), "No se pudo acceder al JSON",Toast.LENGTH_SHORT).show();
         }
     }
 

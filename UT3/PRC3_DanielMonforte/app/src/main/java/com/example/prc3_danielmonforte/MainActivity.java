@@ -1,6 +1,9 @@
 package com.example.prc3_danielmonforte;
 
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -8,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
@@ -21,6 +25,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -55,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
         locationManager=(LocationManager)getSystemService(Context.LOCATION_SERVICE);
         if(pantallaActiva) pedirPermisosUbicacion(); //Pedimos permisos si estamos en esta pantalla
         else actualizarUbicacion(); //Si no, intentamos actualizar la ubicacion
@@ -70,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
             if(grantResults[0]==PackageManager.PERMISSION_GRANTED) actualizarUbicacion(); //Si se ha concedido el permiso, actualizamos la ubicacion
         }
     }
-
 
     /**
      * Método que crea listeners para los diferentes botones e ImageButtons de esta actividad
