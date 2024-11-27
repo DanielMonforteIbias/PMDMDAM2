@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
             handleSendText(intent, receivedText); // Maneja el texto compartido
         }
-        if (Intent.ACTION_SEND.equals(action) && "image/jpeg".equals(type)) {
+        if (Intent.ACTION_SEND.equals(action) && "image/*".equals(type)) {
             handleSendImage(intent, imageView); // Maneja la imagen compartida
         }
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
