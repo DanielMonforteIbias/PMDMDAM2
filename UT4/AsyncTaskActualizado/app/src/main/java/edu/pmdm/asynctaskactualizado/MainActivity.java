@@ -39,12 +39,15 @@ public class MainActivity extends AppCompatActivity {
     private Button btnLimpiarImagenes;
     private EditText edURL;
     private EditText edURLImagen;
+    private TextView txtContadorImagenes;
     public static ArrayList<Bitmap> imagenes=new ArrayList<Bitmap>();
     private int limiteTamaño=6;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        txtContadorImagenes=findViewById(R.id.txtContadorImagenes);
+        actualizarContadorImagenes();
         edURL=findViewById(R.id.edURL);
         edURLImagen=findViewById(R.id.edURLImagen);
         txtDescarga=findViewById(R.id.txtDescarga);
@@ -79,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(imagenes.size()>0){
                     imagenes.clear();
+                    actualizarContadorImagenes();
                     Toast.makeText(getApplicationContext(),"La lista de imágenes se ha reseteado",Toast.LENGTH_SHORT).show();
                 }
                 else Toast.makeText(getApplicationContext(),"No hay imágenes en la lista",Toast.LENGTH_SHORT).show();
@@ -173,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), ListaImagenes.class);
                 startActivity(intent); //Creamos un intent para pasar a la otra actividad
                 edURLImagen.setText(""); //Vaciamos el campo de URL de imagen
+                actualizarContadorImagenes();
             }
             else Toast.makeText(getApplicationContext(),"No se pudo obtener imagen",Toast.LENGTH_SHORT).show();
         }
@@ -202,6 +207,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+    private void actualizarContadorImagenes(){
+        txtContadorImagenes.setText("Contador imágenes: "+imagenes.size());
+    }
 
 }

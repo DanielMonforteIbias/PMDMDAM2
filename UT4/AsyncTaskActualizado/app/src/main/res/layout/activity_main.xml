@@ -31,10 +31,9 @@
         android:id="@+id/txtDescarga"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:text="TextView"
+        app:layout_constraintBottom_toTopOf="@id/edURLImagen"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnDescargar"
-        app:layout_constraintBottom_toTopOf="@id/edURLImagen"/>
+        app:layout_constraintTop_toBottomOf="@+id/btnDescargar" />
 
     <Button
         android:id="@+id/btnDescargar"
@@ -68,5 +67,15 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnDescargarImagen" />
+
+    <TextView
+        android:id="@+id/txtContadorImagenes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contador imágenes: "
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnLimpiarImagenes" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

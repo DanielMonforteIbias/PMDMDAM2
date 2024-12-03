@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SMSToContact_DanielMonforte</string>
+    <string name="seleccionar_contacto">Seleccionar contacto</string>
+    <string name="enviar">Enviar</string>
+    <string name="filtrar_nombre">Filtrar por nombre</string>
+    <string name="filtrar_apellido">Filtrar por apellido</string>
+</resources>
