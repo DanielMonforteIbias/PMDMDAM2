@@ -47,8 +47,10 @@ public class BikesContent {
                 }
                 ITEMS.add(new BikesContent.Bike(photo,owner,description,city,location,email));
             }
-        } catch (JSONException | IOException e) {
-            Toast.makeText(c.getApplicationContext(), "No se pudo acceder al JSON",Toast.LENGTH_SHORT).show();
+        } catch (JSONException e)  {
+            Toast.makeText(c.getApplicationContext(), "El archivo de datos de bicis está vacío",Toast.LENGTH_SHORT).show(); //Mensaje si el JSON existe pero esta vacio
+        }catch(IOException e){
+            Toast.makeText(c.getApplicationContext(), "No se encontró el archivo de datos de las bicis",Toast.LENGTH_SHORT).show(); //Mensaje si el JSON no existe
         }
     }
 

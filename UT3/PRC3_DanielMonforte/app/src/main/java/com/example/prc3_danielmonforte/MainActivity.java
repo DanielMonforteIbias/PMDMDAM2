@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public final int PERMISO_UBICACION=1; //Constante para identificar el permiso de ubicacion
     private LocationManager locationManager; //LocationManager para obtener la ubicacion del usuario
     private Location ubicacion=null; //Objeto ubicacion para guardar la ubicacion del usuario
+    private LocationListener locationListener;
     private static boolean pantallaActiva = true; //Variable estática para saber si estamos en esta pantalla o no
 
     private ActivityMainBinding mainBinding; //Binding para acceder a las vistas sin declarar variables y hacer findViewById
@@ -63,9 +64,12 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         locationManager=(LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        inicializarLocationListener(); //Inicializamos el LocationListener
         if(pantallaActiva) pedirPermisosUbicacion(); //Pedimos permisos si estamos en esta pantalla
-        else actualizarUbicacion(); //Si no, intentamos actualizar la ubicacion
-        crearListeners(); //Creamos los Listeners de los botones
+        else if(comprobarPermisosUbicacion()){ //Si no, si tenemos permisos
+            solicitarActualizacionUbicacion(); //Solicitamos una actualizacion de ubicacion
+        }
+        crearListeners(); //Creamos los Listeners de los botoness
         inicializarLaunchers(); //Inicializamos los launchers de otras actividades
     }
 
@@ -99,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), Configuracion.class); //Creamos un intent de Configuracion
                 configuracionLauncher.launch(intent); //Lanzamos la actividad de Configuracion
-                overridePendingTransition(androidx.navigation.ui.R.anim.nav_default_pop_enter_anim, androidx.navigation.ui.R.anim.nav_default_pop_exit_anim); //Animaciones al cambiar de actividad
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); //Animaciones al cambiar de actividad
             }
         });
 
@@ -110,9 +114,10 @@ public class MainActivity extends AppCompatActivity {
                 correo=mainBinding.editTextCorreo.getText().toString();
                 comprobarCampos(); //Comprobamos que los campos están bien rellenados
                 if(intentLoginValido){ //Si todos los datos son correctos
+                    crearNotificacion("Sesion iniciada con exito"); //Enviamos una notificacion de sesion iniciada
                     Intent intent = new Intent(getApplicationContext(), BikeActivity.class); //Creamos un intent de BikeActivity
                     bikeActivityLauncher.launch(intent); //Lanzamos la actividad de BikeActivity
-                    overridePendingTransition(androidx.navigation.ui.R.anim.nav_default_enter_anim, androidx.navigation.ui.R.anim.nav_default_exit_anim); //Animaciones al cambiar de actividad
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); //Animaciones al cambiar de actividad
                 }
             }
         });
@@ -169,6 +174,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Método que inicializa el locationListener para obtener cambios en la ubicacion
+     */
+    public void inicializarLocationListener(){
+        locationListener=new LocationListener() { //Solicitamos una actualizacion de localizacion
+            @Override
+            public void onLocationChanged(Location location) { //Cuando se obtiene una nueva localizacion
+                locationManager.removeUpdates(this); //Eliminamos actualizaciones para quedarnos con la primera
+                showToast("Se obtuvo una ubicacion!"); //Avisamos al usuario
+                actualizarUbicacion(); //Actualizamos la ubicacion
+            }
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            @Override
+            public void onProviderEnabled(String provider) { //AL activar el proveedor
+                mainBinding.txtDireccion.setText("Buscando ubicacion..."); //Avisamos al usuario
+                actualizarUbicacion(); //Actualizamos la ubicacion
+            }
+            @Override
+            public void onProviderDisabled(String provider) { //Al desactivar el proveedor
+                mainBinding.txtDireccion.setText("EL GPS se ha desactivado"); //Informamos al usuario
+                direccion=""; //Vaciamos la direccion para que no deje entrar
+            }
+        };
+    }
+    /**
      * Método que actualiza la ubicación con la del dispositivo, si es posible
      * También maneja si la ubicación es nula, o si el GPS no está activado
      */
@@ -184,27 +214,18 @@ public class MainActivity extends AppCompatActivity {
             mainBinding.txtDireccion.setText("Latitud: "+latitud+"\nLongitud: "+longitud); //Modificamos la informacion del TextView
         }
         else { //Si no hay ubicacion
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, new LocationListener() { //Solicitamos una actualizacion de localizacion
-                @Override
-                public void onLocationChanged(Location location) { //Cuando se obtiene una nueva localizacion
-                    locationManager.removeUpdates(this); //Eliminamos actualizaciones para quedarnos con la primera
-                    showToast("Se obtuvo una ubicacion!"); //Avisamos al usuario
-                    actualizarUbicacion(); //Actualizamos la ubicacion
-                }
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {}
-                @Override
-                public void onProviderEnabled(String provider) { //AL activar el proveedor
-                    mainBinding.txtDireccion.setText("Buscando ubicacion..."); //Avisamos al usuario
-                    actualizarUbicacion(); //Actualizamos la ubicacion
-                }
-                @Override
-                public void onProviderDisabled(String provider) { //Al desactivar el proveedor
-                    mainBinding.txtDireccion.setText("EL GPS se ha desactivado"); //Informamos al usuario
-                    direccion=""; //Vaciamos la direccion para que no deje entrar
-                }
-            });
+            solicitarActualizacionUbicacion(); //Solicitamos una actualizacion
         }
+    }
+
+    /**
+     * Método que solicita actualizacion de la ubicacion del dispositivo
+     */
+    public void solicitarActualizacionUbicacion(){
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return; //Si no tenemos permisos, volvemos
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 100, locationListener); //Solicitamos la actualizacion
     }
     /**
      * Método que abre un intent en Google Maps, si es posible, con la direccion del dispositivo
@@ -254,5 +275,31 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showToast(String mensaje){
         Toast.makeText(this,mensaje,Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Método que crea una notificación simple para la aplicación
+     * @param texto el texto a mostrar en la notificacion
+     */
+    public void crearNotificacion(String texto){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE); //Creamos el NotificationManager
+        NotificationChannel canal = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) { //Si la API usa canales para manejar notificaciones (a partir de la 26)
+            canal = new NotificationChannel("ShareMyBike", "Canal de notificacion de prueba", NotificationManager.IMPORTANCE_DEFAULT); //Creamos el canal
+            notificationManager.createNotificationChannel(canal);
+        }
+        NotificationCompat.Builder constructorNotif = new NotificationCompat.Builder(this, "ShareMyBike") //Construimos la notificacion con el texto recibido
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setContentTitle("NOTIFICACION")
+                .setContentText(texto)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        Intent intent = new Intent(); //Intent vacio para no hacer nada al pulsar la notificacion
+        TaskStackBuilder pila = TaskStackBuilder.create(this);
+        pila.addParentStack(MainActivity.class);
+
+        pila.addNextIntent(intent); //Añadimos el intent vacío a la pila
+        PendingIntent resultadoPendingIntent = pila.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        constructorNotif.setContentIntent(resultadoPendingIntent);
+        notificationManager.notify(1, constructorNotif.build()); //Mandamos la notificacion
     }
 }

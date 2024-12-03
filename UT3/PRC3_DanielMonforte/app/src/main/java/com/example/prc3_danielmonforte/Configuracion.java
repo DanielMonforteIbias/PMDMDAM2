@@ -48,6 +48,7 @@ public class Configuracion extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish(); //Finalizamos la actividad de configuracion
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); //Animaciones al cambiar de actividad
             }
         });
     }
