@@ -128,7 +128,6 @@ public class MainActivity extends AppCompatActivity {
         // el contenido de la página web con un InputStream, y que se transforma a un String.
         private String descargaUrl(String myurl) throws IOException {
             InputStream is = null;
-
             try {
                 URL url = new URL(myurl);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -167,17 +166,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             if(bitmap!=null){
-                if(imagenes.size()<limiteTamaño){
-                    //En un primer momento se intentaba pasar la imagen a la otra actividad poniendolo como extra en el Intent y pasandolo como ByteArray
-                    //Esto daba Transaction Too Large Exception con imagenes muy grandes (el limite es 1MB), asi que se añaden al ArrayList desde aqui
-                    imagenes.add(bitmap); //Añadimos la imagen a la lista de imagenes
+                if(bitmap.getWidth()>=200 && bitmap.getHeight()>=200){ //Si la imagen mide 200x200 o mas, sera valida. Si no, no, pues al ser mu pequeña se vería con muy mala calidad
+                    if(imagenes.size()<limiteTamaño){
+                        //En un primer momento se intentaba pasar la imagen a la otra actividad poniendolo como extra en el Intent y pasandolo como ByteArray
+                        //Esto daba Transaction Too Large Exception con imagenes muy grandes (el limite es 1MB), asi que se añaden al ArrayList desde aqui
+                        imagenes.add(bitmap); //Añadimos la imagen a la lista de imagenes
+                    }
+                    else Toast.makeText(getApplicationContext(),"Límite de imágenes alcanzado. No se añade",Toast.LENGTH_SHORT).show();
+                    //Se añada o no la imagen, iniciamos la otra actividad. Esto con el fin de que el usuario no tenga que borrar las fotos para poder acceder a esta pantala
+                    Intent intent = new Intent(getApplicationContext(), ListaImagenes.class);
+                    startActivity(intent); //Creamos un intent para pasar a la otra actividad
+                    actualizarContadorImagenes();
                 }
-                else Toast.makeText(getApplicationContext(),"Límite de imágenes alcanzado. No se añade",Toast.LENGTH_SHORT).show();
-                //Se añada o no la imagen, iniciamos la otra actividad. Esto con el fin de que el usuario no tenga que borrar las fotos para poder acceder a esta pantala
-                Intent intent = new Intent(getApplicationContext(), ListaImagenes.class);
-                startActivity(intent); //Creamos un intent para pasar a la otra actividad
+                else Toast.makeText(getApplicationContext(),"La imagen debe ser minimo 200x200",Toast.LENGTH_SHORT).show();
                 edURLImagen.setText(""); //Vaciamos el campo de URL de imagen
-                actualizarContadorImagenes();
             }
             else Toast.makeText(getApplicationContext(),"No se pudo obtener imagen",Toast.LENGTH_SHORT).show();
         }
@@ -208,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void actualizarContadorImagenes(){
-        txtContadorImagenes.setText("Contador imágenes: "+imagenes.size());
+        txtContadorImagenes.setText("Contador imágenes: "+imagenes.size()+" de "+limiteTamaño);
     }
 
 }
