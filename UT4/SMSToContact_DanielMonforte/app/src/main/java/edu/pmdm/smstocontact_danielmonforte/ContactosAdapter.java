@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class ContactosAdapter extends RecyclerView.Adapter<ContactosAdapter.ViewHolder>{
-    private final List<Contacto> contactos; //Lista de bicis
+    private final List<Contacto> contactos; //Lista de contactos
 
     public ContactosAdapter(List<Contacto> contactos) {
         this.contactos = contactos;
@@ -37,7 +37,17 @@ public class ContactosAdapter extends RecyclerView.Adapter<ContactosAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ContactosAdapter.ViewHolder holder, int position) {
-        holder.getNombreCompleto().setText(contactos.get(position).getNombre()+" "+contactos.get(position).getApellido());
+        holder.getNombreCompleto().setText(contactos.get(position).getNombre());
+        holder.getNombreCompleto().setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                MainActivity.binding.editTextMensaje.setVisibility(View.VISIBLE);
+                MainActivity.binding.btnEnviar.setVisibility(View.VISIBLE);
+                MainActivity.binding.txtCaracteresRestantes.setVisibility(View.VISIBLE);
+                MainActivity.contactoSeleccionado=contactos.get(holder.getAdapterPosition());
+                return true;
+            }
+        });
     }
 
     @Override

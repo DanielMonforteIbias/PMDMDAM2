@@ -20,6 +20,11 @@ public class Contacto {
         this.id = id;
         this.nombre = nombre;
     }
+    public Contacto(String id, String nombre,String telefono) {
+        this.id = id;
+        this.nombre = nombre;
+        this.telefono=telefono;
+    }
 
     public String getId() {
         return id;
