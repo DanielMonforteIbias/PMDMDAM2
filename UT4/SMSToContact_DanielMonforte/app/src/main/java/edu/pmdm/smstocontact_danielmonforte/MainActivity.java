@@ -1,6 +1,7 @@
 package edu.pmdm.smstocontact_danielmonforte;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.pm.PackageManager;
@@ -33,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import edu.pmdm.smstocontact_danielmonforte.databinding.ActivityMainBinding;
@@ -82,17 +84,13 @@ public class MainActivity extends AppCompatActivity {
         binding.btnFiltrarPorNombre.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String nombre=binding.editTextNombre.getText().toString();
-                String apellido=binding.editTextApellido.getText().toString();
-                buscar(nombre,apellido);
+                filtrarContactos();
             }
         });
         binding.btnFiltrarPorApellido.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String nombre=binding.editTextNombre.getText().toString();
-                String apellido=binding.editTextApellido.getText().toString();
-                buscar(nombre,apellido);
+                filtrarContactos();
             }
         });
         binding.btnEnviar.setEnabled(false); //Al principio está desactivado
@@ -113,9 +111,10 @@ public class MainActivity extends AppCompatActivity {
         });
         binding.txtCaracteresRestantes.setText(mensaje.length()+" de "+longitudMaxima);
         binding.editTextMensaje.addTextChangedListener(new TextWatcher() {
+            private String textoPrevio="";
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                textoPrevio=s.toString();
             }
 
             @Override
@@ -125,14 +124,22 @@ public class MainActivity extends AppCompatActivity {
                 else longitudMaxima=160;
                 binding.editTextMensaje.setFilters(new InputFilter[]{ new InputFilter.LengthFilter(longitudMaxima) });
 
-                binding.txtCaracteresRestantes.setText(s.length()+" de "+longitudMaxima);
                 if(binding.editTextMensaje.getText().toString().equals("")) binding.btnEnviar.setEnabled(false);
                 else binding.btnEnviar.setEnabled(true);
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-
+                if(s.length()>longitudMaxima){
+                    longitudMaxima=160;
+                    binding.editTextMensaje.setFilters(new InputFilter[]{ new InputFilter.LengthFilter(longitudMaxima) });
+                    binding.editTextMensaje.removeTextChangedListener(this);
+                    binding.editTextMensaje.setText(textoPrevio);
+                    binding.editTextMensaje.setSelection(textoPrevio.length());
+                    binding.editTextMensaje.addTextChangedListener(this);
+                    showToast("No se pueden añadir caracteres Unicode por encima de 70 caracteres");
+                }
+                binding.txtCaracteresRestantes.setText(binding.editTextMensaje.getText().toString().length()+" de "+longitudMaxima);
             }
         });
         adaptador=new ContactosAdapter(contactos);
@@ -141,6 +148,12 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerViewContactos.setBackgroundResource(R.drawable.fondo_recycler_view);
     }
 
+    private void filtrarContactos(){
+        showToast("Filtrando...");
+        String nombre=binding.editTextNombre.getText().toString();
+        String apellido=binding.editTextApellido.getText().toString();
+        buscar(nombre,apellido);
+    }
     private void pedirPermisosContactos(){
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, ACCEDER_A_CONTACTOS);
     }
@@ -165,17 +178,21 @@ public class MainActivity extends AppCompatActivity {
         try{
             SmsManager smsManager=SmsManager.getDefault();
             smsManager.sendTextMessage(telefono,null,mensaje,null,null);
-            showToast("Mensaje enviado");
+            showToast("SMS enviado a "+contactoSeleccionado.getNombre());
         }catch(Exception e){
             showToast("SMS no enviado, intentelo de nuevo");
             e.printStackTrace();
         }
     }
+    @SuppressLint("Range")
     private void buscar(String nombreContacto, String apellidoContacto){
         contactos.clear(); //Limpiamos la lista
         //El comodin ? se reemplazara por _ para que el filtro funcione bien y el caracter en esa posicion sea cualquiera
         nombreContacto = nombreContacto.replace('?', '_');
         apellidoContacto = apellidoContacto.replace('?', '_');
+        //El comodin * se reemplazara por % para que acepte cualquiera
+        nombreContacto = nombreContacto.replace('*', '%');
+        apellidoContacto = apellidoContacto.replace('*', '%');
 
         String proyeccion[]={ContactsContract.Contacts._ID,ContactsContract.Contacts.DISPLAY_NAME,ContactsContract.Contacts.HAS_PHONE_NUMBER,ContactsContract.Contacts.PHOTO_ID};
         String filtro=ContactsContract.Contacts.DISPLAY_NAME+" like ? ";
@@ -184,8 +201,8 @@ public class MainActivity extends AppCompatActivity {
         Cursor cur=cr.query(ContactsContract.Contacts.CONTENT_URI,proyeccion,filtro,argsFiltro,ContactsContract.Contacts.DISPLAY_NAME + " ASC");
         if(cur.getCount()>0){
             while(cur.moveToNext()){
-                String id=cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
-                String nombre=cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                @SuppressLint("Range") String id=cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+                @SuppressLint("Range") String nombre=cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 Bitmap foto= BitmapFactory.decodeStream(abrirFoto(Integer.parseInt(id))); //Obtenemos un bitmap de la foto del contacto
                 if(Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0) {
                     String telefono="";
