@@ -5,6 +5,8 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -15,6 +17,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,12 +36,14 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import edu.pmdm.smstocontact_danielmonforte.databinding.ActivityMainBinding;
+import edu.pmdm.smstocontact_danielmonforte.databinding.DialogoMensajeEnviadoBinding;
 
 public class MainActivity extends AppCompatActivity {
     private static final int ACCEDER_A_CONTACTOS = 1;
     private static final int ENVIAR_SMS = 2;
 
     public static ActivityMainBinding binding;
+    private DialogoMensajeEnviadoBinding dialogoBinding;
     public ContactosAdapter adaptador;
     private ArrayList<Contacto>contactos=new ArrayList<Contacto>();
     public static Contacto contactoSeleccionado=null;
@@ -78,7 +83,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String nombre=binding.editTextNombre.getText().toString();
-                buscar(nombre);
+                String apellido=binding.editTextApellido.getText().toString();
+                buscar(nombre,apellido);
+            }
+        });
+        binding.btnFiltrarPorApellido.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String nombre=binding.editTextNombre.getText().toString();
+                String apellido=binding.editTextApellido.getText().toString();
+                buscar(nombre,apellido);
             }
         });
         binding.btnEnviar.setEnabled(false); //Al principio está desactivado
@@ -86,9 +100,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(comprobarPermisosSMS()){
-                    mensaje=binding.editTextMensaje.getText().toString();
-                    crearDialogo(mensaje);
-                    enviarSMS(contactoSeleccionado.getTelefono(),mensaje);
+                    mensaje=binding.editTextMensaje.getText().toString(); //Obtenemos el mensaje
+                    crearDialogo(mensaje); //Creamos un dialogo con ese mensaje
+                    enviarSMS(contactoSeleccionado.getTelefono(),mensaje); //Enviamos un SMS al contacto seleccionado con el mensaje introducido
+                    binding.editTextMensaje.setText(""); //Vaciamos la caja del mensaje
                 }
                 else {
                     pedirPermisosSMS();
@@ -123,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         adaptador=new ContactosAdapter(contactos);
         binding.recyclerViewContactos.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerViewContactos.setAdapter(adaptador);
+        binding.recyclerViewContactos.setBackgroundResource(R.drawable.fondo_recycler_view);
     }
 
     private void pedirPermisosContactos(){
@@ -155,45 +171,46 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private void buscar(String contacto){
+    private void buscar(String nombreContacto, String apellidoContacto){
         contactos.clear(); //Limpiamos la lista
+        //El comodin ? se reemplazara por _ para que el filtro funcione bien y el caracter en esa posicion sea cualquiera
+        nombreContacto = nombreContacto.replace('?', '_');
+        apellidoContacto = apellidoContacto.replace('?', '_');
+
         String proyeccion[]={ContactsContract.Contacts._ID,ContactsContract.Contacts.DISPLAY_NAME,ContactsContract.Contacts.HAS_PHONE_NUMBER,ContactsContract.Contacts.PHOTO_ID};
         String filtro=ContactsContract.Contacts.DISPLAY_NAME+" like ? ";
-        String argsFiltro[]={"%"+contacto+"%"};
+        String argsFiltro[]={nombreContacto+"% "+apellidoContacto+"%"};
         ContentResolver cr=getContentResolver();
         Cursor cur=cr.query(ContactsContract.Contacts.CONTENT_URI,proyeccion,filtro,argsFiltro,ContactsContract.Contacts.DISPLAY_NAME + " ASC");
         if(cur.getCount()>0){
             while(cur.moveToNext()){
                 String id=cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
                 String nombre=cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                Bitmap foto= BitmapFactory.decodeStream(abrirFoto(Integer.parseInt(id))); //Obtenemos un bitmap de la foto del contacto
                 if(Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0) {
                     String telefono="";
-                    Cursor phones = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                    Cursor cursorTelefonos = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
                             ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id, null, null);
-                    while (phones.moveToNext()) {
-                        telefono = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
+                    while (cursorTelefonos.moveToNext()) {
+                        telefono = cursorTelefonos.getString(cursorTelefonos.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA));
                     }
-                    phones.close();
-                    contactos.add(new Contacto(id,nombre,telefono));
-                    adaptador.notifyDataSetChanged();
+                    cursorTelefonos.close();
+                    contactos.add(new Contacto(id,nombre,telefono,foto));
                 }
             }
         }
-
+        adaptador.notifyDataSetChanged(); //Notificamos al adaptador para actualizar la lista con los contactos coincidentes
         cur.close();
     }
     private void crearDialogo(String mensaje){
-        View alertCustomDialog= LayoutInflater.from(MainActivity.this).inflate(R.layout.dialogo_mensaje_enviado,null);
+        dialogoBinding=DialogoMensajeEnviadoBinding.inflate(getLayoutInflater()); //Inicializamos la variable de binding del dialogo
         AlertDialog.Builder alertDialog=new AlertDialog.Builder(MainActivity.this);
-        alertDialog.setView(alertCustomDialog);
+        alertDialog.setView(dialogoBinding.getRoot());
         AlertDialog dialog=alertDialog.create();
-        Button btnVolver=alertCustomDialog.findViewById(R.id.btnVolver);
-        TextView txtMensaje=alertCustomDialog.findViewById(R.id.txtMensaje);
-        TextView txtTelefono=alertCustomDialog.findViewById(R.id.txtTelefono);
-        txtTelefono.setText(contactoSeleccionado.getTelefono());
-        txtMensaje.setText(mensaje);
-        btnVolver.setOnClickListener(new View.OnClickListener() {
+        dialogoBinding.imgViewContacto.setImageBitmap(contactoSeleccionado.getFoto());
+        dialogoBinding.txtTelefono.setText(contactoSeleccionado.getTelefono());
+        dialogoBinding.txtMensaje.setText(mensaje);
+        dialogoBinding.btnVolver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dialog.cancel();

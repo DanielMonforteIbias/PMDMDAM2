@@ -42,6 +42,8 @@ public class ContactosAdapter extends RecyclerView.Adapter<ContactosAdapter.View
             @Override
             public boolean onLongClick(View v) {
                 MainActivity.binding.editTextMensaje.setVisibility(View.VISIBLE);
+                MainActivity.binding.editTextMensaje.setText(""); //Vaciamos el mensaje al elegir otro contacto
+                MainActivity.binding.editTextMensaje.setHint("Mensaje para "+contactos.get(holder.getAdapterPosition()).getNombre());
                 MainActivity.binding.btnEnviar.setVisibility(View.VISIBLE);
                 MainActivity.binding.txtCaracteresRestantes.setVisibility(View.VISIBLE);
                 MainActivity.contactoSeleccionado=contactos.get(holder.getAdapterPosition());

@@ -5,25 +5,14 @@ import android.graphics.Bitmap;
 public class Contacto {
     private String id;
     private String nombre;
-    private String apellido;
     private String telefono;
     private Bitmap foto;
 
-    public Contacto(String id, String nombre, String apellido, String telefono, Bitmap foto) {
+    public Contacto(String id, String nombre, String telefono, Bitmap foto) {
         this.id = id;
         this.nombre = nombre;
-        this.apellido=apellido;
         this.telefono = telefono;
         this.foto = foto;
-    }
-    public Contacto(String id, String nombre) {
-        this.id = id;
-        this.nombre = nombre;
-    }
-    public Contacto(String id, String nombre,String telefono) {
-        this.id = id;
-        this.nombre = nombre;
-        this.telefono=telefono;
     }
 
     public String getId() {
@@ -40,14 +29,6 @@ public class Contacto {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-
-    public String getApellido() {
-        return apellido;
-    }
-
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
     }
 
     public String getTelefono() {
