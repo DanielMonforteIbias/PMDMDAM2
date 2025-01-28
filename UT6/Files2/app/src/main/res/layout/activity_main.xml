@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="28dp"
+        android:text="Nombre del fichero:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/edRuta"
+        android:layout_width="386dp"
+        android:layout_height="40dp"
+        android:ems="10"
+        android:inputType="textUri|textPersonName"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <Button
+        android:id="@+id/btnLeer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Leer"
+        app:layout_constraintStart_toStartOf="@+id/edRuta"
+        app:layout_constraintTop_toBottomOf="@+id/edRuta" />
+
+    <Button
+        android:id="@+id/btnGuardar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Guardar"
+        app:layout_constraintStart_toEndOf="@+id/btnLeer"
+        app:layout_constraintTop_toBottomOf="@+id/edRuta" />
+
+    <EditText
+        android:id="@+id/edTexto"
+        android:layout_width="387dp"
+        android:layout_height="170dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:inputType="textMultiLine"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chkExterno"
+        app:layout_constraintVertical_bias="0.149" />
+
+    <CheckBox
+        android:id="@+id/chkExterno"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Usar Almacenamiento externo"
+        app:layout_constraintStart_toStartOf="@+id/btnLeer"
+        app:layout_constraintTop_toBottomOf="@+id/btnLeer" />
+
+    <Button
+        android:id="@+id/btnLeerLoremIpsum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cargar lorem ipsum"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edTexto" />
+</androidx.constraintlayout.widget.ConstraintLayout>

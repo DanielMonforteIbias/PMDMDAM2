@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LeerArchivo</string>
+    <string name="elegir_archivo">Elegir archivo</string>
+    <string name="leer_archivo">Leer archivo</string>
+    <string name="guardar_archivo">Guardar archivo</string>
+    <string name="añadir">Añadir</string>
+</resources>
