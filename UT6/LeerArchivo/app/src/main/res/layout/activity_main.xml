@@ -26,22 +26,22 @@
         android:text="@string/leer_archivo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.841"
+        app:layout_constraintHorizontal_bias="0.512"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.114" />
+        app:layout_constraintVertical_bias="0.155" />
 
     <TextView
         android:id="@+id/txtNombreArchivo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nombre del archivo: "
+        android:text="Nombre del archivo "
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.056"
+        app:layout_constraintHorizontal_bias="0.007"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.13" />
+        app:layout_constraintVertical_bias="0.11" />
 
     <TextView
         android:id="@+id/txtContadorPalabras"
@@ -50,12 +50,13 @@
         android:text="Contador palabras:"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.01"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.908" />
+        app:layout_constraintVertical_bias="0.977" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listaLineas"
         android:layout_width="0dp"
         android:layout_height="391dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -75,7 +76,7 @@
         app:layout_constraintVertical_bias="0.922" />
 
     <Button
-        android:id="@+id/btnAñadir"
+        android:id="@+id/btnAnadirLinea"
         android:layout_width="102dp"
         android:layout_height="44dp"
         android:text="@string/añadir"

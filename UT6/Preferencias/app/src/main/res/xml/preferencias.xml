@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <PreferenceCategory android:title="Perfil">
+
+    </PreferenceCategory>
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="feedback"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Introduce algo de feedback"
+        app:useSimpleSummaryProvider="true"/>
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/TipoEmpleado"
+        android:entryValues="@array/TipoEmpleado"
+        android:key="tipoEmpleado"
+        android:title="Tipo de empleado"
+        app:useSimpleSummaryProvider="true" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="turno Mixto"
+        android:title="Tiene turno mixto" />
+    <PreferenceCategory android:title="Uso de la nube">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="usuarioActivo"
+            android:title="Usuario Activo" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="usaTablet"
+            android:title="Utiliza tablet" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
