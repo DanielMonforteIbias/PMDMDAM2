@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                     adapter.notifyDataSetChanged();
                     actualizarContadorPalabras();
+                    reader.close();
+                    inputStream.close();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Error al leer el archivo", Toast.LENGTH_SHORT).show();
                 }
@@ -132,12 +134,15 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 try {
-                    OutputStream outputStream = getContentResolver().openOutputStream(archivoUri);
+                    OutputStream outputStream = getContentResolver().openOutputStream(archivoUri,"wt");
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
                     for (String linea : lineas) {
                         writer.write(linea);
                         writer.newLine();
                     }
+                    writer.close();
+                    outputStream.close();
+                    actualizarContadorPalabras();
                     Toast.makeText(MainActivity.this, "Archivo guardado", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Error al guardar el archivo", Toast.LENGTH_SHORT).show();
