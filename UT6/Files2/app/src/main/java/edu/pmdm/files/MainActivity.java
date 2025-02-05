@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 String linea;
 
                 File f=new File(getRaiz(),ruta);
+                System.out.println(getRaiz());
                 try {
                     FileReader fr=new FileReader(f);
                     BufferedReader br=new BufferedReader(fr);
