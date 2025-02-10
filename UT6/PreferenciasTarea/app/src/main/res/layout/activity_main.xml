@@ -64,7 +64,8 @@
         android:layout_marginBottom="10dp"
         android:ems="10"
         android:hint="Edad"
-        android:inputType="textPersonName" />
+        android:inputType="number"
+        android:maxLength="3" />
 
     <EditText
         android:id="@+id/edSueldo"
@@ -74,7 +75,8 @@
         android:layout_marginBottom="10dp"
         android:ems="10"
         android:hint="Sueldo"
-        android:inputType="textPersonName" />
+        android:inputType="numberDecimal"
+        android:maxLength="15" />
 
     <TextView
         android:id="@+id/txtPrefijo"

@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         editor=misPreferencias.edit();
         boolean notificacionesActivadas=misPreferencias.getBoolean("notificaciones",false);
 
-        if(notificacionesActivadas)crearNotificacion("Bienvenido a la app!");
+        if(notificacionesActivadas && PermissionsManager.comprobarPermisosNotificaciones(this)) crearNotificacion("Bienvenido a la app!");
 
         updateUI();
 
@@ -64,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
         binding.btnGuardar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(binding.edNombre.getText().toString().trim().equals("")){
+                    Toast.makeText(getApplicationContext(), "El nombre no puede estar vacio", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 editor.putString("nombre",binding.edNombre.getText().toString());
                 editor.putString("empresa",binding.edEmpresa.getText().toString());
                 editor.putString("email",binding.edEmail.getText().toString());

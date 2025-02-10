@@ -23,7 +23,7 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="turno Mixto"
+        android:key="turnoMixto"
         android:title="Tiene turno mixto" />
     <PreferenceCategory android:title="Uso de la nube">
         <SwitchPreference

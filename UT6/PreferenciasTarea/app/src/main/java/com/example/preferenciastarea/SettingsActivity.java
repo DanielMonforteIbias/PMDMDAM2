@@ -16,15 +16,21 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class SettingsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
-
+    SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        SharedPreferences misPreferencias= PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        misPreferencias.registerOnSharedPreferenceChangeListener(this);
+        preferences= PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.registerOnSharedPreferenceChangeListener(this);
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(preferences!=null) preferences.unregisterOnSharedPreferenceChangeListener(SettingsActivity.this);
+        super.onDestroy();
     }
 
     @Override
