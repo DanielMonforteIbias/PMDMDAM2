@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        app:title="@string/preferences_header">
+
+        <SwitchPreferenceCompat
+            android:key="modoOscuro"
+            android:title="@string/modo_oscuro"/>
+
+        <ListPreference
+            android:defaultValue="(sin prefijo)"
+            android:entries="@array/formatoTelefono"
+            android:entryValues="@array/formatoTelefono"
+            android:key="formatoTelefono"
+            android:title="Formato del telefono"
+            app:useSimpleSummaryProvider="true" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="notificaciones"
+            android:title="@string/notificaciones" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

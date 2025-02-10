@@ -1,15 +1,17 @@
 package edu.pmdm.leerarchivo;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -19,6 +21,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -26,9 +29,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -40,10 +40,12 @@ import edu.pmdm.leerarchivo.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
-    private ArrayList<String> lineas = new ArrayList<String>();
+    private ArrayList<String> lines = new ArrayList<String>();
     private LinesAdapter adapter;
-    private Uri archivoUri;
+    private Uri uri;
     private ActivityResultLauncher<Intent> elegirArchivoLauncher;
+
+    private final int PERMISO_ALMACENAMIENTO=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        adapter = new LinesAdapter(lineas);
+        adapter = new LinesAdapter(lines);
         binding.listaLineas.setLayoutManager(new LinearLayoutManager(this));
         binding.listaLineas.setAdapter(adapter);
         elegirArchivoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -64,42 +66,47 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         if (result.getResultCode() == Activity.RESULT_OK) {
-                            Intent data = result.getData();
-                            archivoUri = result.getData().getData();
-                            binding.txtNombreArchivo.setText(getFileName(archivoUri));
+                            uri = result.getData().getData();
+                            binding.txtNombreArchivo.setText(getFileName(uri));
                         }
                     }
                 });
         binding.btnElegirArchivo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("text/plain");
-                elegirArchivoLauncher.launch(intent);
+                if(comprobarPermisosAlmacenamiento()){
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("text/plain");
+                    elegirArchivoLauncher.launch(intent);
+                }
+                else{
+                    pedirPermisosAlmacenamiento();
+                    Toast.makeText(MainActivity.this, "Permisos de almacenamiento denegados", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         binding.btnLeerArchivo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (archivoUri == null) {
+                if (uri == null) {
                     Toast.makeText(MainActivity.this, "Selecciona un archivo", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                lineas.clear();
+                lines.clear();
                 try {
-                    InputStream inputStream = getContentResolver().openInputStream(archivoUri);
+                    InputStream inputStream = getContentResolver().openInputStream(uri);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    String linea = "";
-                    while ((linea = reader.readLine()) != null) {
-                        lineas.add(linea);
+                    String line = "";
+                    while ((line = reader.readLine()) != null) {
+                        lines.add(line);
                     }
                     adapter.notifyDataSetChanged();
-                    actualizarContadorPalabras();
+                    updateWordCount();
                     reader.close();
                     inputStream.close();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Error al leer el archivo", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Error leyendo el archivo", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -115,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 String linea = editTextUrl.getText().toString();
                                 if (!linea.isEmpty()) {
-                                    lineas.add(linea);
-                                    adapter.notifyItemInserted(lineas.size());
+                                    lines.add(linea);
+                                    adapter.notifyItemInserted(lines.size());
                                 } else
                                     Toast.makeText(MainActivity.this, "Linea vacia, no se añade", Toast.LENGTH_SHORT).show();
                             }
@@ -129,32 +136,32 @@ public class MainActivity extends AppCompatActivity {
         binding.btnGuardarArchivo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (archivoUri == null) {
+                if (uri == null) {
                     Toast.makeText(MainActivity.this, "Selecciona un archivo", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
-                    OutputStream outputStream = getContentResolver().openOutputStream(archivoUri,"wt");
+                    OutputStream outputStream = getContentResolver().openOutputStream(uri,"wt"); //wt es importante para sobrescribir el archivo
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-                    for (String linea : lineas) {
+                    for (String linea : lines) {
                         writer.write(linea);
                         writer.newLine();
                     }
                     writer.close();
                     outputStream.close();
-                    actualizarContadorPalabras();
+                    updateWordCount();
                     Toast.makeText(MainActivity.this, "Archivo guardado", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Error al guardar el archivo", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Error guardando el archivo", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
-    private void actualizarContadorPalabras() {
+    private void updateWordCount() {
         int contador = 0;
-        for (String linea : lineas) {
-            String[] palabrasLinea = linea.split("\\s+");
+        for (String line : lines) {
+            String[] palabrasLinea = line.split("\\s+");
             contador += palabrasLinea.length;
         }
         binding.txtContadorPalabras.setText("Palabras: " + contador);
@@ -172,5 +179,16 @@ public class MainActivity extends AppCompatActivity {
             cursor.close();
         }
         return fileName;
+    }
+
+    private boolean comprobarPermisosAlmacenamiento() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return true; //Si estamos en la API 29 o superior no hacen falta permisos al usar ACTION_OPEN_DOCUMENT
+        else return ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void pedirPermisosAlmacenamiento() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISO_ALMACENAMIENTO);
+        }
     }
 }

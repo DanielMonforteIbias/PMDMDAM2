@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">PreferenciasTarea</string>
+
+    <string-array name="formatoTelefono">
+        <item>+34 (España)</item>
+        <item>+52 (Mexico)</item>
+        <item>+1 (Estados Unidos)</item>
+        <item>+44 (Reino Unido)</item>
+        <item>+49 (Alemania)</item>
+    </string-array>
+    <string-array name="TipoEmpleado">
+        <item>Profesor</item>
+        <item>Ordenanza</item>
+        <item>Limpieza</item>
+        <item>Otro</item>
+    </string-array>
+    <!-- Preference Titles -->
+    <string name="preferences_header">Preferencias</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Sync Preferences -->
+    <string name="modo_oscuro">Modo oscuro</string>
+    <string name="notificaciones">Notificaciones activadas</string>
+</resources>
