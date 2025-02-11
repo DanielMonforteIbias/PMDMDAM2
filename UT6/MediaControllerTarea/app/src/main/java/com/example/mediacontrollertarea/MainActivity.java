@@ -10,12 +10,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.mediacontrollertarea.databinding.ActivityMainBinding;
 import com.google.gson.Gson;
@@ -51,17 +54,16 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     private SharedPreferences preferencias;
     private static final String PREFERENCIAS_NOMBRE = "Preferencias";
     private static final String ULTIMA_POSICION = "posicion";
-    private static final String ULTIMA_CANCION = "cancion";
-    private static final String LISTA_CANCIONES = "listaCanciones";
-    private int posicionCancion = 0;
+    private static final String APP_CERRADA="appCerrada";
+    public static int posicionCancion = 0;
 
-    private ArrayList<String> listaCanciones;
-    private int cancionIndex = 0;
+    private CancionAdapter adapter;
+    private ArrayList<Cancion> listaCanciones=new ArrayList<Cancion>();
+    public static int cancionIndex = 0;
 
     private static final String CANAL = "MediaControllerTarea";
     private MediaSessionCompat mediaSession;
     private NotificationManagerCompat notificationManager;
-    private MusicReceiver musicReceiver;
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override
@@ -70,20 +72,12 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         preferencias = getSharedPreferences(PREFERENCIAS_NOMBRE, MODE_PRIVATE);
-        recuperarListaCanciones();
-        recuperarUltimaCancion();
 
         mc = new MediaController(this);
         mc.setMediaPlayer(this);
         mc.setAnchorView(findViewById(R.id.constraintLayout));
-
-        if (listaCanciones.isEmpty()) mp = MediaPlayer.create(MainActivity.this, R.raw.eltiempopasara);
-        else {
-            Uri uri = Uri.parse(listaCanciones.get(cancionIndex));
-            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            mp = MediaPlayer.create(MainActivity.this, uri);
-        }
-        mp.seekTo(posicionCancion);
+        llenarListaCanciones();
+        mp = MediaPlayer.create(MainActivity.this, listaCanciones.get(cancionIndex).getId());
         h = new Handler();
         mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -103,13 +97,11 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                         if (result.getResultCode() == Activity.RESULT_OK) {
                             Uri audioUri = result.getData().getData();
                             if (audioUri != null) {
-                                if (!listaCanciones.contains(audioUri.toString())) {
-                                    getContentResolver().takePersistableUriPermission(audioUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                                    System.out.println(audioUri.toString());
-                                    listaCanciones.add(audioUri.toString());
-                                    cancionIndex = listaCanciones.size() - 1;
-                                    cambiarCancion();
-                                } else Toast.makeText(MainActivity.this, "Esta cancion ya esta en la lista", Toast.LENGTH_SHORT).show();
+                                getContentResolver().takePersistableUriPermission(audioUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                                listaCanciones.add(new Cancion(obtenerNombreCancion(audioUri),audioUri));
+                                adapter.notifyDataSetChanged();
+                                cancionIndex = listaCanciones.size() - 1;
+                                cambiarCancion();
                             }
                         }
                     }
@@ -132,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         binding.btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                stop();
+                pause();
             }
         });
         binding.btnStopReset.setOnClickListener(new View.OnClickListener() {
@@ -148,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 int actual = mp.getCurrentPosition() / 1000;
                 int total = mp.getDuration() / 1000;
                 binding.txtTiempoCancion.setText(formatTime(actual) + " / " + formatTime(total));
+                binding.txtTiempoRestante.setText("Restante: "+formatTime(total-actual));
                 h.postDelayed(this, 1000); //Cada 1000ms
             }
         };
@@ -166,16 +159,20 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 anteriorCancion();
             }
         });
+        adapter=new CancionAdapter(listaCanciones);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerView.setAdapter(adapter);
 
-        //NOTIFICACION
-        musicReceiver = new MusicReceiver(MainActivity.this);
-        System.out.println(MainActivity.this);
+        MusicReceiver musicReceiver = new MusicReceiver();
+
+        // Registrar el BroadcastReceiver dinámicamente
         IntentFilter filter = new IntentFilter();
         filter.addAction("PLAY_PAUSE");
         filter.addAction("NEXT");
         filter.addAction("PREVIOUS");
         filter.addAction("STOP");
         registerReceiver(musicReceiver, filter);
+        //NOTIFICACION
 
         mediaSession = new MediaSessionCompat(this, "Musica");
         mediaSession.setActive(true);
@@ -184,33 +181,10 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         mostrarNotificacion();
     }
 
-    private void guardarUltimaCancion() {
-        SharedPreferences.Editor editor = preferencias.edit();
-        editor.putInt(ULTIMA_CANCION, cancionIndex);
-        editor.apply();
+    private void llenarListaCanciones(){
+        listaCanciones.add(new Cancion("El Tiempo Pasara",R.raw.eltiempopasara));
+        listaCanciones.add(new Cancion("Enter Sandman",R.raw.entersandman));
     }
-
-    private void guardarListaCanciones() {
-        SharedPreferences.Editor editor = preferencias.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(listaCanciones);
-        editor.putString(LISTA_CANCIONES, json);
-        editor.apply();
-    }
-
-    private void recuperarListaCanciones() {
-        String json = preferencias.getString(LISTA_CANCIONES, "[]");
-        Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<String>>() {}.getType();
-        listaCanciones = gson.fromJson(json, type);
-    }
-
-    private void recuperarUltimaCancion() {
-        cancionIndex = preferencias.getInt(ULTIMA_CANCION, 0);
-        posicionCancion = preferencias.getInt(ULTIMA_POSICION, 0);
-    }
-
-
     public void siguienteCancion() {
         if (cancionIndex < listaCanciones.size() - 1) {
             cancionIndex++;
@@ -242,11 +216,17 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 mp.release();
             }
             try {
-                Uri cancionUri = Uri.parse(listaCanciones.get(cancionIndex));
-                getContentResolver().takePersistableUriPermission(cancionUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                mp = MediaPlayer.create(MainActivity.this, cancionUri);
+                Cancion cancion=listaCanciones.get(cancionIndex);
+                if(cancion.isCancionDefault()){
+                    mp = MediaPlayer.create(MainActivity.this,cancion.getId());
+                }
+                else{
+                    getContentResolver().takePersistableUriPermission(cancion.getUri(), Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    mp= MediaPlayer.create(MainActivity.this,cancion.getUri());
+                }
                 mp.seekTo(0);
                 mp.start();
+                mostrarNotificacion();
             } catch (SecurityException e) {
                 e.printStackTrace();
                 Toast.makeText(MainActivity.this, "No hay permisos para acceder al archivo", Toast.LENGTH_SHORT).show();
@@ -255,31 +235,56 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         else Toast.makeText(MainActivity.this, "No hay canciones en la lista", Toast.LENGTH_SHORT).show();
     }
 
+
+    private String obtenerNombreCancion(Uri uri) {
+        String nombre = "Cancion";
+        Cursor cursor = getContentResolver().query(uri,
+                new String[]{MediaStore.MediaColumns.DISPLAY_NAME},
+                null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+                if (index != -1) {
+                    nombre = cursor.getString(index);
+                }
+            }
+            cursor.close();
+        }
+        return nombre;
+    }
+
+
+
     @Override
     protected void onPause() {
         super.onPause();
         if (mp != null) {
             SharedPreferences.Editor editor = preferencias.edit();
             editor.putInt(ULTIMA_POSICION, mp.getCurrentPosition());
+            editor.putBoolean(APP_CERRADA, false);
             editor.apply();
         }
-        guardarUltimaCancion();
-        guardarListaCanciones();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (musicReceiver != null) {
-            unregisterReceiver(musicReceiver);
-        }
+        SharedPreferences.Editor editor = preferencias.edit();
+        editor.putBoolean(APP_CERRADA, true);
+        editor.apply();
     }
-    /*@Override
+    @Override
     protected void onResume() {
         super.onResume();
-        posicionCancion=preferencias.getInt(ULTIMA_POSICION,mp.getCurrentPosition());
-        mp.seekTo(posicionCancion);
-    }*/
+        boolean appCerrada = preferencias.getBoolean(APP_CERRADA, false);
+        System.out.println(appCerrada);
+        posicionCancion = appCerrada ? 0 : preferencias.getInt(ULTIMA_POSICION, 0);
+        if(!mp.isPlaying()){
+            posicionCancion=preferencias.getInt(ULTIMA_POSICION,mp.getCurrentPosition());
+            mp.seekTo(posicionCancion);
+            mp.start();
+        }
+    }
 
     public void show(View v) {
         mc.show();
@@ -288,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     public void stop() {
         if (mp.isPlaying()) {
             mp.stop();
+            mostrarNotificacion();
             try {
                 mp.prepare();
             } catch (IOException e) {
@@ -306,6 +312,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         }
         mp.seekTo(0);
         binding.txtTiempoCancion.setText("00:00 / " + formatTime(mp.getDuration() / 1000));
+        mostrarNotificacion();
     }
 
     @Override
@@ -313,12 +320,16 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         if (!mp.isPlaying()) {
             mp.start();
             h.post(actualizarTiempo);
+            mostrarNotificacion();
         }
     }
 
     @Override
     public void pause() {
-        if (mp.isPlaying()) mp.pause();
+        if (mp.isPlaying()) {
+            mp.pause();
+        }
+        mostrarNotificacion();
     }
 
     @Override
@@ -404,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
 
         Notification notification = new NotificationCompat.Builder(this, CANAL)
                 .setContentTitle("Música")
-                .setContentText("Artista - Canción")
+                .setContentText(listaCanciones.get(cancionIndex).getTitulo())
                 .setSmallIcon(R.drawable.baseline_music_note_24)
                 .addAction(R.drawable.anterior, "Anterior", previousIntent)
                 .addAction(isPlaying() ? R.drawable.pause : R.drawable.start, isPlaying() ? "Pausar" : "Reanudar", playPauseIntent)

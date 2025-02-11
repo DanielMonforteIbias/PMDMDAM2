@@ -16,6 +16,8 @@ public class MusicReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         System.out.println(mainActivity+" a");
+        if (context instanceof MainActivity) System.out.println("Si");
+
         if(mainActivity!=null){
             String action = intent.getAction();
 
