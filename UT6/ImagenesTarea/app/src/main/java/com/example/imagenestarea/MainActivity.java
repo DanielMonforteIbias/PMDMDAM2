@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -22,6 +23,7 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResult;
@@ -235,6 +237,11 @@ public class MainActivity extends AppCompatActivity {
                 cambiarVelocidadReproduccion(2f);
             }
         });
+
+        binding.videoView.setOnPreparedListener(mp -> {
+            mediaPlayer = mp;
+            mediaPlayer.setLooping(true);
+        });
     }
 
     private Bitmap aplicarEfecto(Bitmap bitmap, ColorMatrix colorMatrix) {
@@ -343,40 +350,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void reproducirVideo(Uri uri) {
-        mediaPlayer = new MediaPlayer();
-        binding.surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(@NonNull SurfaceHolder holder) {
-                try {
-                    mediaPlayer.prepare();
-                    mediaPlayer.setDataSource(MainActivity.this, uri);
-                    mediaPlayer.setSurface(holder.getSurface());
-                    mediaPlayer.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-
-            }
-
-            @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-                if (mediaPlayer != null) {
-                    mediaPlayer.release();
-                    mediaPlayer = null;
-                }
-            }
-        });
+        if (uri != null) {
+            binding.videoView.setVideoURI(uri);
+            binding.videoView.start();
+        }
     }
 
     private void cambiarVelocidadReproduccion(float velocidad) {
-        if (mediaPlayer != null) {
-            PlaybackParams playbackParams = new PlaybackParams();
-            playbackParams.setSpeed(velocidad);
-            mediaPlayer.setPlaybackParams(playbackParams);
+        if (mediaPlayer != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PlaybackParams params = new PlaybackParams();
+            params.setSpeed(velocidad);
+            mediaPlayer.setPlaybackParams(params);
         }
+        else Toast.makeText(MainActivity.this, "No se pudo reproducir el video", Toast.LENGTH_SHORT).show();
     }
 }

@@ -3,9 +3,11 @@ package edu.pmdm.mivideojuego;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -32,6 +34,15 @@ public class MainActivity extends AppCompatActivity {
         animarBoton();
         animarImageView();
         animarMan();
+
+        Button b=findViewById(R.id.button);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i=new Intent(getApplicationContext(),ActividadJuego.class);
+                startActivity(i);
+            }
+        });
     }
 
     public void animarMan(){
