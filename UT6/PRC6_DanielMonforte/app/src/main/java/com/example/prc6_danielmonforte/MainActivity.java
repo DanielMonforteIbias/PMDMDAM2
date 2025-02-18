@@ -91,4 +91,10 @@ public class MainActivity extends AppCompatActivity {
         }
         adapter.notifyDataSetChanged();
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        RecursosAdapter.audioPlayer.stopAudio();
+    }
 }

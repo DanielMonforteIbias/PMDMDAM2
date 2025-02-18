@@ -48,7 +48,7 @@ public class JSONExtractor {
         } catch (JSONException e)  {
             Toast.makeText(c.getApplicationContext(), "El archivo de datos de recursos está vacío",Toast.LENGTH_SHORT).show(); //Mensaje si el JSON existe pero esta vacio
         }catch(IOException e){
-            Toast.makeText(c.getApplicationContext(), "No se encontró el archivo de recursos de las bicis",Toast.LENGTH_SHORT).show(); //Mensaje si el JSON no existe
+            Toast.makeText(c.getApplicationContext(), "No se encontró el archivo de recursos",Toast.LENGTH_SHORT).show(); //Mensaje si el JSON no existe
         }
         return recursos;
     }

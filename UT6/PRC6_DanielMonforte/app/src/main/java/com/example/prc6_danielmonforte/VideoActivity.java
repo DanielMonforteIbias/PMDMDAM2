@@ -44,7 +44,6 @@ public class VideoActivity extends AppCompatActivity {
             mediaController.setAnchorView(videoView);
             videoView.setVideoURI(uri);
             videoView.start();
-            System.out.println(uri);
         }
         else Toast.makeText(this,"No se encontró URI del video",Toast.LENGTH_SHORT).show();
 
@@ -55,5 +54,12 @@ public class VideoActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (videoView != null) videoView.suspend();
+        if (mediaController != null) mediaController.hide();
     }
 }

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class RecursosAdapter extends RecyclerView.Adapter<RecursosAdapter.ViewHolder>{
     private ArrayList<Recurso> recursos;
 
-    private AudioPlayer audioPlayer;
+    public static AudioPlayer audioPlayer;
 
     public RecursosAdapter(ArrayList<Recurso> recursos, Context context) {
         this.recursos = recursos;

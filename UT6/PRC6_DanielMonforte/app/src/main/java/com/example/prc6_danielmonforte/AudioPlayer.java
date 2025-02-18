@@ -59,6 +59,14 @@ public class AudioPlayer implements MediaController.MediaPlayerControl {
         else Toast.makeText(context,"No se puede reproducir el audio",Toast.LENGTH_SHORT).show();
     }
 
+    public void stopAudio() {
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+            }
+        }
+    }
+
     @Override
     public void start() { mediaPlayer.start(); }
 
