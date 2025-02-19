@@ -143,7 +143,8 @@ public class EboraJuego extends SurfaceView implements SurfaceHolder.Callback, V
 
         //Cargar disparo
         disparo = BitmapFactory.decodeResource(getResources(), R.drawable.shot);
-
+        // Cargamos la imagen de la explosión
+        explosion = BitmapFactory.decodeResource(getResources(), R.mipmap.explosion);
         //Cargar enemigo
         cargarEnemigos();
 

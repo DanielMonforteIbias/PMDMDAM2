@@ -59,6 +59,7 @@ public class RecursosAdapter extends RecyclerView.Adapter<RecursosAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull RecursosAdapter.ViewHolder holder, int position) {
         Recurso recurso=recursos.get(position);
+        //Ponemos los datos en las vistas del item
         holder.imgPortada.setImageBitmap(recurso.getImagen());
         holder.txtNombre.setText(recurso.getNombre());
         holder.txtDescripcion.setText(recurso.getDescripcion());
@@ -68,12 +69,12 @@ public class RecursosAdapter extends RecyclerView.Adapter<RecursosAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 Context context=v.getContext();
-                if(recurso.getTipo()==EnumTipos.AUDIO.valor){
-                    audioPlayer.playAudio(context,recurso.getUri());
+                if(recurso.getTipo()==EnumTipos.AUDIO.valor){ //Si el recurso es un audio
+                    audioPlayer.playAudio(context,recurso.getUri()); //Iniciamos el audio con el AudioPlayer
                 }
-                else if(recurso.getTipo()==EnumTipos.VIDEO.valor || recurso.getTipo()==EnumTipos.STREAMING.valor){
-                    Intent videoIntent=new Intent(context,VideoActivity.class);
-                    videoIntent.putExtra("recurso",recurso);
+                else if(recurso.getTipo()==EnumTipos.VIDEO.valor || recurso.getTipo()==EnumTipos.STREAMING.valor){ //Si el recurso es un video
+                    Intent videoIntent=new Intent(context,VideoActivity.class); //Iniciamos la actividad de video
+                    videoIntent.putExtra("recurso",recurso); //Pasamos el recurso como parcelable
                     context.startActivity(videoIntent);
                 }
             }

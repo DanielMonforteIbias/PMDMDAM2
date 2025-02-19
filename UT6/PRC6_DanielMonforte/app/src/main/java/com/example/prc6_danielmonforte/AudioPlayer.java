@@ -18,18 +18,7 @@ public class AudioPlayer implements MediaController.MediaPlayerControl {
         mediaController=new MediaController(context);
         mediaController.setMediaPlayer(this);
         mediaController.setAnchorView(((Activity) context).findViewById(android.R.id.content));
-        ((Activity)context).findViewById(android.R.id.content).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(mediaController!=null && mediaPlayer!=null){
-                    if (event.getAction() == MotionEvent.ACTION_DOWN)
-                        if (!mediaController.isShowing()) mediaController.show(0);
-                        else mediaController.hide();
-
-                }
-                return false;
-            }
-        });
+        //Listener para mostrar el MediaController al tocar la pantalla
         ((Activity)context).findViewById(android.R.id.content).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -50,10 +39,10 @@ public class AudioPlayer implements MediaController.MediaPlayerControl {
             }
             mediaPlayer.release();
         }
-        int resId = context.getResources().getIdentifier(audioFileName, "raw", context.getPackageName());
-        mediaPlayer = MediaPlayer.create(context, resId);
+        int resId = context.getResources().getIdentifier(audioFileName, "raw", context.getPackageName()); //Obtenemos el id del audio
+        mediaPlayer = MediaPlayer.create(context, resId); //Creamos el mediaPlayer con el id del audio
         if(mediaPlayer!=null) {
-            mediaPlayer.start();
+            mediaPlayer.start(); //Empezamos la reproduccion
             mediaController.show(0);
         }
         else Toast.makeText(context,"No se puede reproducir el audio",Toast.LENGTH_SHORT).show();

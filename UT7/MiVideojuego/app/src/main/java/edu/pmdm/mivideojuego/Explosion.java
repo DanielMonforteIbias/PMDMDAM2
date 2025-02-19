@@ -21,7 +21,7 @@ public class Explosion {
         anchoSprite = juego.explosion.getWidth() / NUMERO_IMAGENES_EN_SECUENCIA;
         altoSprite = juego.explosion.getHeight();
         estado = -1; //recien creado
-        mediaPlayer = MediaPlayer.create(j.getContext(), R.mipmap.explosion);
+        mediaPlayer = MediaPlayer.create(j.getContext(), R.raw.explosion);
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {

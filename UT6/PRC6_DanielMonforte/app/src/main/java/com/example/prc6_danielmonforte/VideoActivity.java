@@ -1,5 +1,6 @@
 package com.example.prc6_danielmonforte;
 
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -26,24 +27,30 @@ public class VideoActivity extends AppCompatActivity {
 
         videoView = findViewById(R.id.videoView);
         mediaController = new MediaController(this);
-        Recurso recurso = getIntent().getParcelableExtra("recurso");
+        Recurso recurso = getIntent().getParcelableExtra("recurso"); //Obtenemos el recurso parcelable del intent
         String videoUri=recurso.getUri();
         Uri uri=null;
         if (recurso.getUri() != null) {
-            if(recurso.getTipo()==EnumTipos.VIDEO.valor){
-                int videoId=getResources().getIdentifier(videoUri, "raw", getPackageName());
+            if(recurso.getTipo()==EnumTipos.VIDEO.valor){ //Si el recurso que se abrio es un video local
+                int videoId=getResources().getIdentifier(videoUri, "raw", getPackageName()); //Obtenemos el id del recurso de raw
                 if(videoId!=0){
                     uri = Uri.parse("android.resource://" + getPackageName() + "/" +videoId);
                 }
                 else Toast.makeText(this,"No se pudo encontrar el recurso del video",Toast.LENGTH_SHORT).show();
             }
-            else if(recurso.getTipo()==EnumTipos.STREAMING.valor){
+            else if(recurso.getTipo()==EnumTipos.STREAMING.valor){ //Si el recurso es un video en streaming
                 uri=Uri.parse(recurso.getUri());
             }
             videoView.setMediaController(mediaController);
             mediaController.setAnchorView(videoView);
             videoView.setVideoURI(uri);
             videoView.start();
+            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+                    mediaController.show(0);
+                }
+            });
         }
         else Toast.makeText(this,"No se encontró URI del video",Toast.LENGTH_SHORT).show();
 

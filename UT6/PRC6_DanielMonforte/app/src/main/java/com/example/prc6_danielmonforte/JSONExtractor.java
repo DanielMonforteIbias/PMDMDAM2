@@ -26,8 +26,10 @@ public class JSONExtractor {
 
             JSONObject jsonObject = new JSONObject(json);
             JSONArray couchList = jsonObject.getJSONArray("recursos_list");
+            //Recorremos el array con los objetos JSON
             for (int i = 0; i < couchList.length(); i++) {
                 JSONObject jsonCouch = couchList.getJSONObject(i);
+                //Obtenemos los datos del recurso
                 String nombre = jsonCouch.getString("nombre");
                 String descripcion = jsonCouch.getString("descripcion");
                 int tipo=-1;
@@ -43,7 +45,7 @@ public class JSONExtractor {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                recursos.add(new Recurso(nombre,descripcion,tipo,uri,imagen));
+                recursos.add(new Recurso(nombre,descripcion,tipo,uri,imagen)); //Añadimos el recurso a la lista
             }
         } catch (JSONException e)  {
             Toast.makeText(c.getApplicationContext(), "El archivo de datos de recursos está vacío",Toast.LENGTH_SHORT).show(); //Mensaje si el JSON existe pero esta vacio

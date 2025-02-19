@@ -41,11 +41,11 @@ public class MainActivity extends AppCompatActivity {
 
         preferencias = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         editor = preferencias.edit();
-        filtro=preferencias.getInt(FILTRO,-1);
+        filtro=preferencias.getInt(FILTRO,-1); //Obtenemos el filtro guardado, -1 si no existe, que corresponde a TODOS
 
         adapter = new RecursosAdapter(recursos,this);
-        filtrarLista();
-
+        filtrarLista(); //Filtramos la lista de recursos
+        //Damos adaptador y layout manager al recyclerView
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerView.setAdapter(adapter);
     }
